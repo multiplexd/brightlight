@@ -9,7 +9,7 @@ This is brightlight, version 1. brightlight is a program that can get and set
 the screen backlight brightness on Linux systems using the kernel sysfs 
 interface. I wrote this program because the backlight keys on my laptop's 
 keyboard didn't work after I installed Linux on it, and the bash script I was 
-using to performthe task wasn't very flexible nor portable.
+using to perform the task wasn't very flexible nor portable.
 
 This program requires libbsd or a BSD-compatible implementation of strlcpy() 
 and strlcat() (see the comment at the top of the source code).
