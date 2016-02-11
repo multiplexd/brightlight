@@ -1,4 +1,4 @@
-/* brightlight v1 - change the screen backlight brightness on Linux systems
+/* brightlight v2-rc1 - change the screen backlight brightness on Linux systems
 ** Copyright (C) 2016 David Miller <multiplexd@gmx.com>
 **
 ** This program is free software; you can redistribute it and/or
@@ -43,7 +43,7 @@
 #define MAX_PATH_LEN 200
 #define EXTRA_PATH_LEN 20
 #define PROGRAM_NAME "brightlight"
-#define PROGRAM_VERSION 1
+#define PROGRAM_VERSION "2-rc1"
 
 unsigned int get_backlight;
 unsigned int set_backlight;
@@ -55,8 +55,7 @@ char *argv0;
 char backlight_path[MAX_PATH_LEN];
 
 unsigned int from_percentage(unsigned int val_to_convert);
-unsigned int get_current_brightness();
-unsigned int get_max_brightness();
+unsigned int get_value_from_file(char* path_suffix);
 void parse_args(int argc, char* argv[]);
 unsigned int parse_cmdline_int(char* arg_to_parse);
 void read_backlight_brightness();
@@ -77,7 +76,7 @@ int main(int argc, char* argv[]) {
 
    validate_control_directory();
 
-   maximum = get_max_brightness();
+   maximum = get_value_from_file("/max_brightness");
 
    if(set_backlight) {
       validate_args();
@@ -101,54 +100,29 @@ unsigned int from_percentage(unsigned int val_to_convert) {
    return (val_to_convert * maximum) / 100;
 }
 
-unsigned int get_current_brightness() {
-   int bright = -1;
-   FILE* brightness_file;
+unsigned int get_value_from_file(char* path_suffix) {
+   int value = -1;
+   FILE* file_to_read;
    char path[MAX_PATH_LEN + EXTRA_PATH_LEN];
 
    strlcpy(path, backlight_path, MAX_PATH_LEN);
-   strlcat(path, "/brightness", MAX_PATH_LEN + EXTRA_PATH_LEN);
+   strlcat(path, path_suffix, MAX_PATH_LEN + EXTRA_PATH_LEN);
 
-   brightness_file = fopen(path, "r");
-   if(brightness_file == NULL) {
-      fputs("Error occured while trying to open brightness file.\n", stderr);
+   file_to_read = fopen(path, "r");
+   if(file_to_read == NULL) {
+      fprintf(stderr, "Error occured while trying to open %s file.\n", path_suffix);
       exit(1);
    }
 
-   fscanf(brightness_file, "%d", &bright);
-   if(bright < 0) {
-      fputs("Could not read brightness from brightness file.\n", stderr);
+   fscanf(file_to_read, "%d", &value);
+   if(value < 0) {
+      fprintf(stderr, "Could not read maximum brightness from %s file.\n", path_suffix);
       exit(1);
    }
 
-   fclose(brightness_file);
+   fclose(file_to_read);
 
-   return (unsigned int) bright;
-}
-
-unsigned int get_max_brightness() {
-   int max = -1;
-   FILE* max_file;
-   char path[MAX_PATH_LEN + EXTRA_PATH_LEN];
-
-   strlcpy(path, backlight_path, MAX_PATH_LEN);
-   strlcat(path, "/max_brightness", MAX_PATH_LEN + EXTRA_PATH_LEN);
-
-   max_file = fopen(path, "r");
-   if(max_file == NULL) {
-      fputs("Error occured while trying to open max_brightness file.\n", stderr);
-      exit(1);
-   }
-
-   fscanf(max_file, "%d", &max);
-   if(max < 0) {
-      fputs("Could not read maximum brightness from max_brightness file.\n", stderr);
-      exit(1);
-   }
-
-   fclose(max_file);
-
-   return (unsigned int) max;
+   return (unsigned int) value;
 }
 
 void parse_args(int argc, char* argv[]) {
@@ -244,7 +218,7 @@ void read_backlight_brightness() {
    unsigned int outval;
    char* out_string_end;
 
-   brightness = get_current_brightness();
+   brightness = get_value_from_file("/brightness");
 
    if(values_as_percentages) {
       outval = to_percentage(brightness);
@@ -386,7 +360,7 @@ void validate_control_directory() {
 }
 
 void version() {
-   printf("%s v%d\n", PROGRAM_NAME, PROGRAM_VERSION);
+   printf("%s v%s\n", PROGRAM_NAME, PROGRAM_VERSION);
    puts("Copyright (C) 2016 David Miller <multiplexd@gmx.com");
    printf("\
 This is free software under the terms of the GNU General Public License, \n\
@@ -402,7 +376,7 @@ void write_backlight_brightness() {
    char* out_string_end;
    char* out_string_filler;
 
-   current = get_current_brightness();
+   current = get_value_from_file("/brightness");
 
    if(values_as_percentages) {
       val_to_write = from_percentage(brightness);
