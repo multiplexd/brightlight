@@ -2,6 +2,8 @@
     brightlight v2-rc1
 ###########################
 
+WARNING: This software version is a RELEASE CANDIDATE - it may not be stable.
+
 Overview
 ========
 
