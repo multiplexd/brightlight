@@ -13,4 +13,7 @@
  - Remove to_percentage() and from_percentage() and replace calls with proper 
    calculations.
 
+ - Add options to increment or decrement the backlight brightness as well as 
+   setting it at specific values (such as '-i <val>' and '-d <val>').
+
 ###################################################################################
