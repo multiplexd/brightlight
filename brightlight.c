@@ -54,14 +54,12 @@ unsigned int values_as_percentages;
 char *argv0;
 char backlight_path[MAX_PATH_LEN];
 
-unsigned int from_percentage(unsigned int val_to_convert);
 unsigned int get_value_from_file(char* path_suffix);
 void parse_args(int argc, char* argv[]);
 unsigned int parse_cmdline_int(char* arg_to_parse);
 void read_backlight_brightness();
 void read_maximum_brightness();
 void set_current_brightness(unsigned int bright);
-unsigned int to_percentage(unsigned int val_to_convert);
 void usage();
 void validate_args();
 void validate_control_directory();
@@ -221,7 +219,7 @@ void read_backlight_brightness() {
    brightness = get_value_from_file("/brightness");
 
    if(values_as_percentages) {
-      outval = to_percentage(brightness);
+      outval = (brightness * 100) / maximum;
       out_string_end = "%.";
    } else {
       outval = brightness;
@@ -238,7 +236,7 @@ void read_maximum_brightness() {
    char* out_string_end;
 
    if(values_as_percentages) {
-      outval = to_percentage(maximum);
+      outval = (maximum * 100) / maximum;
       out_string_end = "%.";
    } else {
       outval = maximum;
@@ -379,8 +377,8 @@ void write_backlight_brightness() {
    current = get_value_from_file("/brightness");
 
    if(values_as_percentages) {
-      val_to_write = from_percentage(brightness);
-      oldval = to_percentage(current);
+      val_to_write = (brightness * maximum) / 100;
+      oldval = (current * 100) / maximum;
       out_string_end = "%.";
       out_string_filler = "% ";
    } else {
