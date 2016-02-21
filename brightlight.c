@@ -48,9 +48,12 @@
 unsigned int get_backlight;
 unsigned int set_backlight;
 unsigned int max_brightness;
+unsigned int inc_brightness;
+unsigned int dec_brightness;
 int brightness;               /* Signed because of file I/O testing done in read_maximum_brightness() which requires signed ints */
 unsigned int maximum;
 unsigned int values_as_percentages;
+int delta_brightness;
 char *argv0;
 char backlight_path[MAX_PATH_LEN];
 
@@ -59,12 +62,12 @@ void parse_args(int argc, char* argv[]);
 unsigned int parse_cmdline_int(char* arg_to_parse);
 void read_backlight_brightness();
 void read_maximum_brightness();
-void set_current_brightness(unsigned int bright);
 void usage();
 void validate_args();
 void validate_control_directory();
 void version();
 void write_backlight_brightness();
+void write_value_to_file(unsigned int bright);
 
 int main(int argc, char* argv[]) {
 
@@ -93,11 +96,6 @@ int main(int argc, char* argv[]) {
    exit(0);
 }
 
-unsigned int from_percentage(unsigned int val_to_convert) {
-
-   return (val_to_convert * maximum) / 100;
-}
-
 unsigned int get_value_from_file(char* path_suffix) {
    int value = -1;
    FILE* file_to_read;
@@ -114,7 +112,7 @@ unsigned int get_value_from_file(char* path_suffix) {
 
    fscanf(file_to_read, "%d", &value);
    if(value < 0) {
-      fprintf(stderr, "Could not read maximum brightness from %s file.\n", path_suffix);
+      fprintf(stderr, "Could not read from %s file.\n", path_suffix);
       exit(1);
    }
 
@@ -181,6 +179,24 @@ void parse_args(int argc, char* argv[]) {
          }
          max_brightness = 1;
          conflicting_args = 1;
+      } else if(strcmp(argv[argn], "-i") == 0 && argn + 1 < argc) {
+	 if(conflicting_args) {
+ 	    fputs("Conflicting options given! Pass the -h flag for help.\n", stderr);
+	    exit(1);
+	 }
+	 inc_brightness = 1;
+	 argn++;
+	 cmdline_brightness = argv[argn];
+	 conflicting_args = 1;
+      } else if(strcmp(argv[argn], "-d") == 0 && argn + 1 < argc) {
+	 if(conflicting_args) {
+ 	    fputs("Conflicting options given! Pass the -h flag for help.\n", stderr);
+	    exit(1);
+	 }
+	 dec_brightness = 1;
+	 argn++;
+	 cmdline_brightness = argv[argn];
+	 conflicting_args = 1;
       } else {
          fputs("Error parsing options. Pass the -h flag for help.\n", stderr);
          exit(1);
@@ -195,6 +211,8 @@ void parse_args(int argc, char* argv[]) {
    if(set_backlight)
       brightness = parse_cmdline_int(cmdline_brightness);
 
+   if(inc_brightness || dec_brightness)
+      delta_brightness = parse_cmdline_int(cmdline_brightness);
    return;
 }
 
@@ -244,29 +262,6 @@ void read_maximum_brightness() {
    }
 
    printf("Maximum backlight brightness is: %d%s\n", outval, out_string_end);
-
-   return;
-}
-
-void set_current_brightness(unsigned int bright) {
-   FILE* brightness_file;
-   char path[MAX_PATH_LEN + EXTRA_PATH_LEN];
-
-   strlcpy(path, backlight_path, MAX_PATH_LEN);
-   strlcat(path, "/brightness", MAX_PATH_LEN + EXTRA_PATH_LEN);
-
-   brightness_file = fopen(path, "w");
-   if(brightness_file == NULL) {
-      fputs("Error occured while trying to open brightness file.\n", stderr);
-      exit(1);
-   }
-
-   if(fprintf(brightness_file, "%d", bright) < 0) {
-      fputs("Could not write brightness to brightness file.\n", stderr);
-      exit(1);
-   }
-
-   fclose(brightness_file);
 
    return;
 }
@@ -388,9 +383,33 @@ void write_backlight_brightness() {
       out_string_filler = " ";
    }
 
-   set_current_brightness(val_to_write);
+   write_value_to_file(val_to_write);
 
    printf("Changed backlight brightness: %d%s=> %d%s\n", oldval, out_string_filler, brightness, out_string_end);      
 
    return;
 }
+
+void write_value_to_file(unsigned int bright) {
+   FILE* brightness_file;
+   char path[MAX_PATH_LEN + EXTRA_PATH_LEN];
+
+   strlcpy(path, backlight_path, MAX_PATH_LEN);
+   strlcat(path, "/brightness", MAX_PATH_LEN + EXTRA_PATH_LEN);
+
+   brightness_file = fopen(path, "w");
+   if(brightness_file == NULL) {
+      fputs("Error occured while trying to open brightness file.\n", stderr);
+      exit(1);
+   }
+
+   if(fprintf(brightness_file, "%d", bright) < 0) {
+      fputs("Could not write brightness to brightness file.\n", stderr);
+      exit(1);
+   }
+
+   fclose(brightness_file);
+
+   return;
+}
+
