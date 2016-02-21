@@ -1,4 +1,4 @@
-/* brightlight v2-rc1 - change the screen backlight brightness on Linux systems
+/* brightlight v2-rc2 - change the screen backlight brightness on Linux systems
 ** Copyright (C) 2016 David Miller <multiplexd@gmx.com>
 **
 ** This program is free software; you can redistribute it and/or
@@ -43,7 +43,7 @@
 #define MAX_PATH_LEN 200
 #define EXTRA_PATH_LEN 20
 #define PROGRAM_NAME "brightlight"
-#define PROGRAM_VERSION "2-rc1"
+#define PROGRAM_VERSION "2-rc2"
 
 unsigned int get_backlight;
 unsigned int set_backlight;
@@ -446,7 +446,7 @@ void validate_increment(unsigned int reference_value) {
 
 void version() {
    printf("%s v%s\n", PROGRAM_NAME, PROGRAM_VERSION);
-   puts("Copyright (C) 2016 David Miller <multiplexd@gmx.com");
+   puts("Copyright (C) 2016 David Miller <multiplexd@gmx.com>");
    printf("\
 This is free software under the terms of the GNU General Public License, \n\
 version 2 or later. You are free to use, modify and redistribute it, however \n\
