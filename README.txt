@@ -37,7 +37,7 @@ The compile-time default can always be overridden using the -f flag (see below).
 Usage
 =====
 
-Usage: brightlight [OPTIONS]
+Usage: ./a.out [OPTIONS]
 Options:
 
       -v         Print program version and exit.
@@ -48,6 +48,10 @@ Options:
       -r         Read the backlight brightness level.
       -w <val>   Set the backlight brightness level to <val>, where <val> is a
                  a positive integer.
+      -i <val>   Increment the backlight brightness level to <val>, where
+                 <val> is a positive integer.
+      -d <val>   Decrement the backlight brightness level to <val>, where
+                 <val> is a positive integer.
       -f <path>  Specify alternative path to backlight control directory, such
                  as "/sys/class/backlight/intel_backlight/"
       -m         Show maximum brightness level of the screen backlight on the 
@@ -55,9 +59,8 @@ Options:
                  used if -f is not specified. The -p flag is ignored when this
                  option is specified.
 
-The flags -r, -w and -m are mutually exclusive, however one of the three is 
-required.
-
+The flags -r, -w, -m, -i and -d are mutually exclusive, however one of the 
+three is required.
 
 Changelog:
 ==========

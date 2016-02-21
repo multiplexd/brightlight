@@ -53,10 +53,12 @@ unsigned int dec_brightness;
 int brightness;               /* Signed because of file I/O testing done in read_maximum_brightness() which requires signed ints */
 unsigned int maximum;
 unsigned int values_as_percentages;
-int delta_brightness;
+unsigned int delta_brightness;
+unsigned int current_brightness;
 char *argv0;
 char backlight_path[MAX_PATH_LEN];
 
+void change_existing_brightness();
 unsigned int get_value_from_file(char* path_suffix);
 void parse_args(int argc, char* argv[]);
 unsigned int parse_cmdline_int(char* arg_to_parse);
@@ -65,9 +67,11 @@ void read_maximum_brightness();
 void usage();
 void validate_args();
 void validate_control_directory();
+void validate_decrement(int reference_value); /* Argument must be unsigned in order to detect values below 0 */
+void validate_increment(unsigned int reference_value);
 void version();
 void write_backlight_brightness();
-void write_value_to_file(unsigned int bright);
+void write_brightness_to_file(unsigned int bright);
 
 int main(int argc, char* argv[]) {
 
@@ -89,11 +93,65 @@ int main(int argc, char* argv[]) {
       write_backlight_brightness();
    } else if(max_brightness) {
       read_maximum_brightness();
+   } else if(inc_brightness || dec_brightness) {
+      change_existing_brightness();
    } else {
       fputs("Error parsing options. Pass the -h flag for help.\n", stderr);
    }
 
    exit(0);
+}
+
+void change_existing_brightness() {
+   unsigned int oldval;
+   unsigned int current;
+   unsigned int val_to_write;
+   char* out_string_end;
+   char* out_string_filler;
+   
+   current = get_value_from_file("/brightness");
+
+   if(inc_brightness) { 
+      validate_increment(current);      
+   } else if(dec_brightness) {
+      validate_decrement((int) current);
+   }
+
+   if(inc_brightness) {
+      if(values_as_percentages) {
+         val_to_write = current + ((delta_brightness * maximum) / 100);
+         oldval = (current * 100) / maximum;
+         out_string_end = "%.";
+         out_string_filler = "% ";
+      } else {
+         val_to_write = current + delta_brightness;
+         oldval = current;
+         out_string_end = ".";
+         out_string_filler = " ";
+      }
+   } else if(dec_brightness){
+      if(values_as_percentages) {
+         val_to_write = current - ((delta_brightness * maximum) / 100);
+         oldval = (current * 100) / maximum;
+         out_string_end = "%.";
+         out_string_filler = "% ";
+      } else {
+         val_to_write = current - delta_brightness;
+         oldval = current;
+         out_string_end = ".";
+         out_string_filler = " ";
+      }
+   }
+
+   write_brightness_to_file(val_to_write);
+
+   if(inc_brightness) {
+      printf("Changed backlight brightness: %d%s=> %d%s\n", oldval, out_string_filler, oldval + delta_brightness, out_string_end);      
+   } else if(dec_brightness) {
+      printf("Changed backlight brightness: %d%s=> %d%s\n", oldval, out_string_filler, oldval - delta_brightness, out_string_end);
+   }
+   
+   return;
 }
 
 unsigned int get_value_from_file(char* path_suffix) {
@@ -266,11 +324,6 @@ void read_maximum_brightness() {
    return;
 }
 
-unsigned int to_percentage(unsigned int val_to_convert) {
-
-   return (val_to_convert * 100) / maximum;
-}
-
 void usage() {
    printf("Usage: %s [OPTIONS]\n", argv0);
    printf("\
@@ -284,6 +337,10 @@ Options:\n\
       -r         Read the backlight brightness level.\n\
       -w <val>   Set the backlight brightness level to <val>, where <val> is a\n\
                  a positive integer.\n\
+      -i <val>   Increment the backlight brightness level by <val>, where\n\
+                 <val> is a positive integer.\n\
+      -d <val>   Decrement the backlight brightness level by <val>, where\n\
+                 <val> is a positive integer.\n\
       -f <path>  Specify alternative path to backlight control directory, such\n\
                  as \"/sys/class/backlight/intel_backlight/\"\n\
       -m         Show maximum brightness level of the screen backlight on the \n\
@@ -291,7 +348,7 @@ Options:\n\
                  used if -f is not specified. The -p flag is ignored when this\n\
                  option is specified.\n\n");
 
-   printf("The flags -r, -w and -m are mutually exclusive, however one of the three is \nrequired.\n");
+   printf("The flags -r, -w, -m, -i and -d are mutually exclusive, however one of the \nthree is required.\n");
 
    return;
 }
@@ -310,7 +367,6 @@ void validate_args() {
          exit(1);
       }
    }
-
 
    return;
 }
@@ -352,6 +408,42 @@ void validate_control_directory() {
    return;
 }
 
+void validate_decrement(int reference_value) {
+
+   if(values_as_percentages) {
+      int current = (reference_value * 100) / maximum;
+      if(current - (int) delta_brightness < 0) {
+         fputs("Invalid option given. Pass the -h option for help.\n", stderr);
+	 exit(1);
+      }
+   } else {
+      if(reference_value - (int) delta_brightness < 0) {
+	 fputs("Invalid option given. Pass the -h option for help.\n", stderr);
+	 exit(1);
+      }
+   }
+
+   return;
+}
+
+void validate_increment(unsigned int reference_value) {
+
+   if(values_as_percentages) {
+      unsigned int current = (reference_value * 100) / maximum;
+      if(current + delta_brightness > 100) {
+         fputs("Invalid option given. Pass the -h option for help.\n", stderr);
+	 exit(1);
+      }
+   } else {
+      if(reference_value + delta_brightness > maximum) {
+	 fputs("Invalid option given. Pass the -h option for help.\n", stderr);
+	 exit(1);
+      }
+   }
+
+   return;
+}
+
 void version() {
    printf("%s v%s\n", PROGRAM_NAME, PROGRAM_VERSION);
    puts("Copyright (C) 2016 David Miller <multiplexd@gmx.com");
@@ -383,14 +475,14 @@ void write_backlight_brightness() {
       out_string_filler = " ";
    }
 
-   write_value_to_file(val_to_write);
+   write_brightness_to_file(val_to_write);
 
    printf("Changed backlight brightness: %d%s=> %d%s\n", oldval, out_string_filler, brightness, out_string_end);      
 
    return;
 }
 
-void write_value_to_file(unsigned int bright) {
+void write_brightness_to_file(unsigned int bright) {
    FILE* brightness_file;
    char path[MAX_PATH_LEN + EXTRA_PATH_LEN];
 
