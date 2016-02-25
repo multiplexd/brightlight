@@ -37,7 +37,7 @@ The compile-time default can always be overridden using the -f flag (see below).
 Usage
 =====
 
-Usage: ./a.out [OPTIONS]
+Usage: brightlight [OPTIONS]
 Options:
 
       -v         Print program version and exit.
