@@ -281,6 +281,9 @@ void read_maximum_brightness() {
    return;
 }
 
+void throw_error(enum errors, char* opt_arg) {
+}
+
 void usage() {
    printf("Usage: %s [OPTIONS]\n", argv0);
    printf("\

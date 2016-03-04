@@ -45,12 +45,27 @@ unsigned int current_brightness;
 char *argv0;
 char backlight_path[MAX_PATH_LEN];
 
+enum errors {
+   ERR_OPEN_FILE,
+   ERR_READ_FILE,
+   ERR_WRITE_FILE,
+   ERR_NO_OPTS,
+   ERR_OPT_CONFLICT,
+   ERR_PARSE_OPTS,
+   ERR_INVAL_OPT,
+   ERR_FILE_IS_NOT_DIR,
+   ERR_ACCES_ON_DIR,
+   ERR_CONTROL_DIR,
+   ERR_FILE_ACCESS,
+};
+
 void change_existing_brightness();
 unsigned int get_value_from_file(char* path_suffix);
 void parse_args(int argc, char* argv[]);
 unsigned int parse_cmdline_int(char* arg_to_parse);
 void read_backlight_brightness();
 void read_maximum_brightness();
+void throw_error(enum errors, char* opt_arg);
 void usage();
 void validate_args();
 void validate_control_directory();
