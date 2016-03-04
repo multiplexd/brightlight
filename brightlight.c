@@ -28,50 +28,7 @@
 ** also be statically linked by adding the -static flag.
 */
 
-
-#include <bsd/string.h>
-#include <ctype.h>
-#include <dirent.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <unistd.h>
-
-#define BACKLIGHT_PATH "/sys/class/backlight/intel_backlight"
-#define MAX_PATH_LEN 200
-#define EXTRA_PATH_LEN 20
-#define PROGRAM_NAME "brightlight"
-#define PROGRAM_VERSION "2-rc2"
-
-unsigned int get_backlight;
-unsigned int set_backlight;
-unsigned int max_brightness;
-unsigned int inc_brightness;
-unsigned int dec_brightness;
-int brightness;               /* Signed because of file I/O testing done in read_maximum_brightness() which requires signed ints */
-unsigned int maximum;
-unsigned int values_as_percentages;
-unsigned int delta_brightness;
-unsigned int current_brightness;
-char *argv0;
-char backlight_path[MAX_PATH_LEN];
-
-void change_existing_brightness();
-unsigned int get_value_from_file(char* path_suffix);
-void parse_args(int argc, char* argv[]);
-unsigned int parse_cmdline_int(char* arg_to_parse);
-void read_backlight_brightness();
-void read_maximum_brightness();
-void usage();
-void validate_args();
-void validate_control_directory();
-void validate_decrement(int reference_value); /* Argument must be unsigned in order to detect values below 0 */
-void validate_increment(unsigned int reference_value);
-void version();
-void write_backlight_brightness();
-void write_brightness_to_file(unsigned int bright);
+#include "brightlight.h"
 
 int main(int argc, char* argv[]) {
 
@@ -408,7 +365,7 @@ void validate_control_directory() {
    return;
 }
 
-void validate_decrement(int reference_value) {
+void validate_decrement(unsigned int reference_value) {
 
    if(values_as_percentages) {
       int current = (reference_value * 100) / maximum;
@@ -417,7 +374,7 @@ void validate_decrement(int reference_value) {
 	 exit(1);
       }
    } else {
-      if(reference_value - (int) delta_brightness < 0) {
+      if((int) reference_value - (int) delta_brightness < 0) {
 	 fputs("Invalid option given. Pass the -h option for help.\n", stderr);
 	 exit(1);
       }
