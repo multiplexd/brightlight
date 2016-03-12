@@ -56,7 +56,7 @@ enum errors {
    ERR_FILE_IS_NOT_DIR,
    ERR_ACCES_ON_DIR,
    ERR_CONTROL_DIR,
-   ERR_FILE_ACCESS,
+   ERR_FILE_ACCES,
 };
 
 void change_existing_brightness();

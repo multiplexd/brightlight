@@ -281,7 +281,34 @@ void read_maximum_brightness() {
    return;
 }
 
-void throw_error(enum errors, char* opt_arg) {
+void throw_error(enum errors err, char* opt_arg) {
+
+   switch(err) {
+   case ERR_OPEN_FILE:
+      break;
+   case ERR_READ_FILE:
+      break;
+   case ERR_WRITE_FILE:
+      break;
+   case ERR_NO_OPTS:
+      break;
+   case ERR_OPT_CONFLICT:
+      break;
+   case ERR_PARSE_OPTS:
+      break;
+   case ERR_INVAL_OPT:
+      break;
+   case ERR_FILE_IS_NOT_DIR:
+      break;
+   case ERR_ACCES_ON_DIR:
+      break;
+   case ERR_CONTROL_DIR:
+      break;
+   case ERR_FILE_ACCES:
+      break;
+   }
+
+   exit(1);
 }
 
 void usage() {
