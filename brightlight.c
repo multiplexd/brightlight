@@ -335,7 +335,7 @@ Options:\n\
                  used if -f is not specified. The -p flag is ignored when this\n\
                  option is specified.\n\n");
 
-   printf("The flags -r, -w, -m, -i and -d are mutually exclusive, however one of the \nthree is required.\n");
+   printf("The flags -r, -w, -m, -i and -d are mutually exclusive, however one of the \nfive is required.\n");
 
    return;
 }
