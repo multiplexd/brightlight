@@ -20,4 +20,7 @@
 
  - Introduce a suitable build system.
 
+ - Make the program compatible with relative paths and directory names without
+   trailing slashes
+
 ###################################################################################

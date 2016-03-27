@@ -319,7 +319,8 @@ Options:\n\
       -d <val>   Decrement the backlight brightness level by <val>, where\n\
                  <val> is a positive integer.\n\
       -f <path>  Specify alternative path to backlight control directory, such\n\
-                 as \"/sys/class/backlight/intel_backlight/\"\n\
+                 as \"/sys/class/backlight/intel_backlight/\". Must be an\n\
+                 absolute path with a trailing slash.\n\
       -m         Show maximum brightness level of the screen backlight on the \n\
                  kernel's scale. The compile-time default control directory is\n\
                  used if -f is not specified. The -p flag is ignored when this\n\
