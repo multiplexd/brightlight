@@ -29,6 +29,7 @@
 #define BACKLIGHT_PATH "/sys/class/backlight/intel_backlight"
 #define MAX_PATH_LEN 200
 #define EXTRA_PATH_LEN 20
+#define CHAR_ARG_LEN 10
 #define PROGRAM_NAME "brightlight"
 #define PROGRAM_VERSION "2-rc2"
 
@@ -46,17 +47,20 @@ char *argv0;
 char backlight_path[MAX_PATH_LEN];
 
 enum errors {
-   ERR_OPEN_FILE,
-   ERR_READ_FILE,
-   ERR_WRITE_FILE,
-   ERR_NO_OPTS,
-   ERR_OPT_CONFLICT,
-   ERR_PARSE_OPTS,
-   ERR_INVAL_OPT,
-   ERR_FILE_IS_NOT_DIR,
-   ERR_ACCES_ON_DIR,
-   ERR_CONTROL_DIR,
-   ERR_FILE_ACCES,
+   ERR_OPEN_FILE,          /* Error trying to open a file */
+   ERR_READ_FILE,          /* Error reading from a file */
+   ERR_WRITE_FILE,         /* Error writing to a file */
+   ERR_NO_OPTS,            /* No options specified */
+   ERR_OPT_CONFLICT,       /* Conflicting options given */
+   ERR_PARSE_OPTS,         /* Error parsing options */
+   ERR_INVAL_OPT,          /* Invalid option argument */
+   ERR_FILE_IS_NOT_DIR,    /* Specified control directory is a file */
+   ERR_ACCES_ON_DIR,       /* Got permission denied accessing the control directory */
+   ERR_CONTROL_DIR,        /* Control directory couldn't be accessed */
+   ERR_FILE_ACCES,         /* Couldn't access a file inside the control directory */
+   ERR_OPT_NOT_KNOWN,      /* Unkown option specified */
+   ERR_OPT_INCOMPLETE,     /* Option requires an argument */
+   ERR_ARG_OVERLOAD        /* Too may arguments were given */
 };
 
 void change_existing_brightness();

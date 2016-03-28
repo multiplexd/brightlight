@@ -132,93 +132,13 @@ unsigned int get_value_from_file(char* path_suffix) {
    return (unsigned int) value;
 }
 
-/*
 void parse_args(int argc, char* argv[]) {
-   *
-   ** This function, specifically the conditional loop and immediately following 
-   ** if statement, is based on the function parse_args() in thttpd.c of thttpd-2.27 
-   ** by Jef Poskanzer (http://www.acme.com/software/thttpd).
-   *
-   int argn, conflicting_args;
-   char* cmdline_brightness;
-
-   set_backlight = 0;
-   get_backlight = 0;
-   max_brightness = 0;
-   values_as_percentages = 0;
-   brightness = 0;
-   strlcpy(backlight_path, BACKLIGHT_PATH, MAX_PATH_LEN);     * Use the compiled-in default path unless told otherwise *
-   conflicting_args = 0;
-
-   if(argc == 1)
-      throw_error(ERR_NO_OPTS, "");
-
-   argn = 1;
-   while(argn < argc && argv[argn][0] == '-') {
-      if(strcmp(argv[argn], "-v") == 0) {
-         version();
-         exit(0);
-      } else if(strcmp(argv[argn], "-h") == 0) {
-         usage();
-         exit(0);
-      } else if(strcmp(argv[argn], "-r") == 0) {
-         if(conflicting_args)
-	    throw_error(ERR_OPT_CONFLICT, "");
-         get_backlight = 1;
-         conflicting_args = 1;
-      } else if(strcmp(argv[argn], "-w") == 0 && argn + 1 < argc) {
-         if(conflicting_args) 
-	    throw_error(ERR_OPT_CONFLICT, "");
-	 argn++;
-         set_backlight = 1;
-         cmdline_brightness = argv[argn];
-         conflicting_args = 1;
-      } else if(strcmp(argv[argn], "-f") == 0 && argn + 1 < argc) {
-         argn++;
-         strlcpy(backlight_path, argv[argn], MAX_PATH_LEN);
-      } else if(strcmp(argv[argn], "-p") == 0) {
-         values_as_percentages = 1;
-      } else if(strcmp(argv[argn], "-m") == 0) {
-         if(conflicting_args) 
-	    throw_error(ERR_OPT_CONFLICT, "");
-         max_brightness = 1;
-         conflicting_args = 1;
-      } else if(strcmp(argv[argn], "-i") == 0 && argn + 1 < argc) {
-	 if(conflicting_args) 
-	    throw_error(ERR_OPT_CONFLICT, "");
-	 inc_brightness = 1;
-	 argn++;
-	 cmdline_brightness = argv[argn];
-	 conflicting_args = 1;
-      } else if(strcmp(argv[argn], "-d") == 0 && argn + 1 < argc) {
-	 if(conflicting_args) 
-	    throw_error(ERR_OPT_CONFLICT, "");
-	 dec_brightness = 1;
-	 argn++;
-	 cmdline_brightness = argv[argn];
-	 conflicting_args = 1;
-      } else {
-	 throw_error(ERR_PARSE_OPTS, "");
-      }
-      argn++;
-   }
-   if(argn != argc) 
-      throw_error(ERR_PARSE_OPTS, "");
-
-   if(set_backlight)
-      brightness = parse_cmdline_int(cmdline_brightness);
-
-   if(inc_brightness || dec_brightness)
-      delta_brightness = parse_cmdline_int(cmdline_brightness);
-   return;
-}
-*/
-
-void parse_args_new(int argc, char* argv[]) {
 
    char opt; /* Used with getopt() below */
-
-   /* Initialise all the global variables */
+   int conflicting_args;
+   char* cmdline_brightness;
+  
+   /* Initialise variables */
    set_backlight = 0;
    get_backlight = 0;
    max_brightness = 0;
@@ -240,7 +160,7 @@ void parse_args_new(int argc, char* argv[]) {
 	    throw_error(ERR_OPT_CONFLICT, "");
 	 dec_brightness = 1;
 	 conflicting_args = 1;
-	 cmdline_brightness = optarg;
+	 strlcpy(cmdline_brightness, optarg, CHAR_ARG_LEN);
 	 break;
       case 'f':
 	 strlcpy(backlight_path, optarg, MAX_PATH_LEN);
@@ -254,7 +174,7 @@ void parse_args_new(int argc, char* argv[]) {
 	    throw_error(ERR_OPT_CONFLICT, "");
 	 inc_brightness = 1;
 	 conflicting_args = 1;
-	 cmdline_brightness = optarg;
+	 strlcpy(cmdline_brightness, optarg, CHAR_ARG_LEN);
 	 break;
       case 'm':
 	 if(conflicting_args)
@@ -264,11 +184,13 @@ void parse_args_new(int argc, char* argv[]) {
 	 break;
       case 'p':
 	 values_as_percentages = 1;
+	 break;
       case 'r':
 	 if(conflicting_args)
 	    throw_error(ERR_OPT_CONFLICT, "");
 	 get_backlight = 1;
 	 conflicting_args = 1;
+	 break;
       case 'v':
 	 version();
 	 exit(0);
@@ -277,13 +199,29 @@ void parse_args_new(int argc, char* argv[]) {
 	 if(conflicting_args)
 	    throw_error(ERR_OPT_CONFLICT, "");
 	 set_backlight = 1;
-	 cmdline_brightness = optarg;
 	 conflicting_args = 1;
+	 strlcpy(cmdline_brightness, optarg, CHAR_ARG_LEN);
+	 break;
       case '?':
-	 if(optopt == );
+	 if(optopt == 'd' || optopt == 'i' || optopt == 'f' || optopt == 'w')
+	    throw_error(ERR_OPT_INCOMPLETE, (char *) optopt);
+	 else
+	    throw_error(ERR_OPT_NOT_KNOWN, (char *) optopt);
+	 break;
       }
 	 
    }
+
+   if(optind != argc)
+      throw_error(ERR_ARG_OVERLOAD, "");
+
+   if(set_backlight)
+      brightness = parse_cmdline_int(cmdline_brightness);
+
+   if(inc_brightness || dec_brightness)
+      delta_brightness = parse_cmdline_int(cmdline_brightness);
+
+   return;
 }
 
 
@@ -291,7 +229,7 @@ unsigned int parse_cmdline_int(char* arg_to_parse) {
    int character = 0;
 
    while(arg_to_parse[character] != '\0') {
-      if(character >= 5 || isdigit(arg_to_parse[character]) == 0) 
+      if(character >= 5 || isdigit(arg_to_parse[character]) == 0)
 	 throw_error(ERR_INVAL_OPT, "");
       character++;
    }
@@ -370,6 +308,15 @@ void throw_error(enum errors err, char* opt_arg) {
       break;
    case ERR_FILE_ACCES:
       fprintf(stderr, "Control directory exists but could not find %s control file.\n", opt_arg);
+      break;
+   case ERR_OPT_NOT_KNOWN:
+      fprintf(stderr, "Unknown option '-%c'. Pass the -h flag for help.\n", opt_arg);
+      break;
+   case ERR_OPT_INCOMPLETE:
+      fprintf(stderr, "Option '-%c' reqiures an argument. Pass the -h flag for help.\n", opt_arg);
+      break;
+   case ERR_ARG_OVERLOAD:
+      fputs("Too many arguments. Pass the -h flag for help.\n", stderr);
       break;
    }
 
