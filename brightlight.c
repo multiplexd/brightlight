@@ -164,7 +164,7 @@ void parse_args(int argc, char* argv[]) {
 	    throw_error(ERR_OPT_CONFLICT, "");
 	 dec_brightness = 1;
 	 conflicting_args = 1;
-	 strlcpy(cmdline_brightness, optarg, CHAR_ARG_LEN);
+	 cmdline_brightness = optarg;
 	 break;
       case 'f':
 	 strlcpy(backlight_path, optarg, MAX_PATH_LEN);
@@ -177,7 +177,7 @@ void parse_args(int argc, char* argv[]) {
 	    throw_error(ERR_OPT_CONFLICT, "");
 	 inc_brightness = 1;
 	 conflicting_args = 1;
-	 strlcpy(cmdline_brightness, optarg, CHAR_ARG_LEN);
+	 cmdline_brightness = optarg;
 	 break;
       case 'm':
 	 if(conflicting_args)
@@ -202,7 +202,7 @@ void parse_args(int argc, char* argv[]) {
 	    throw_error(ERR_OPT_CONFLICT, "");
 	 set_backlight = 1;
 	 conflicting_args = 1;
-	 strlcpy(cmdline_brightness, optarg, CHAR_ARG_LEN);
+	 cmdline_brightness = optarg;
 	 break;
       case '?':
 	 if(optopt == 'd' || optopt == 'i' || optopt == 'f' || optopt == 'w')
@@ -243,9 +243,11 @@ unsigned int parse_cmdline_int(char* arg_to_parse) {
    int character = 0;
 
    while(arg_to_parse[character] != '\0') {
+
       if(character >= 5 || isdigit(arg_to_parse[character]) == 0)
 	 throw_error(ERR_INVAL_OPT, "");
       character++;
+
    }
 
    return (unsigned int) atoi(arg_to_parse);
