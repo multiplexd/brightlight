@@ -135,7 +135,7 @@ unsigned int get_value_from_file(char* path_suffix) {
 void parse_args(int argc, char* argv[]) {
 
    char opt; /* Used with getopt() below */
-   int conflicting_args;
+   int conflicting_args, show_version, show_help;
    char* cmdline_brightness;
   
    /* Initialise variables */
@@ -144,8 +144,12 @@ void parse_args(int argc, char* argv[]) {
    max_brightness = 0;
    values_as_percentages = 0;
    brightness = 0;
-   strlcpy(backlight_path, BACKLIGHT_PATH, MAX_PATH_LEN);     /* Use the compiled-in default path unless told otherwise */
    conflicting_args = 0;
+   show_version = 0;
+   show_help = 0;
+   
+   strlcpy(backlight_path, BACKLIGHT_PATH, MAX_PATH_LEN);     /* Use the compiled-in default path unless told otherwise */
+
 
    if(argc == 1)
       throw_error(ERR_NO_OPTS, ""); /* Arguments are required */
@@ -166,8 +170,7 @@ void parse_args(int argc, char* argv[]) {
 	 strlcpy(backlight_path, optarg, MAX_PATH_LEN);
 	 break;
       case 'h':
-	 usage();
-	 exit(0);
+	 show_help = 1;
 	 break;
       case 'i':
 	 if(conflicting_args)
@@ -192,8 +195,7 @@ void parse_args(int argc, char* argv[]) {
 	 conflicting_args = 1;
 	 break;
       case 'v':
-	 version();
-	 exit(0);
+	 show_version = 1;
 	 break;
       case 'w':
 	 if(conflicting_args)
@@ -214,6 +216,18 @@ void parse_args(int argc, char* argv[]) {
 
    if(optind != argc)
       throw_error(ERR_ARG_OVERLOAD, "");
+
+   if(show_help || show_version) { /* If either -v or -h are specified */
+      if(show_version)
+	 version();
+
+      if(show_version && show_help) /* If we get *both* -v and -h */
+	 putchar('\n'); /* Print a newline */
+
+      if(show_help)
+	 usage();
+      exit(0);
+   }
 
    if(set_backlight)
       brightness = parse_cmdline_int(cmdline_brightness);
