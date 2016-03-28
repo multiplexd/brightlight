@@ -132,12 +132,13 @@ unsigned int get_value_from_file(char* path_suffix) {
    return (unsigned int) value;
 }
 
+/*
 void parse_args(int argc, char* argv[]) {
-   /*
+   *
    ** This function, specifically the conditional loop and immediately following 
    ** if statement, is based on the function parse_args() in thttpd.c of thttpd-2.27 
    ** by Jef Poskanzer (http://www.acme.com/software/thttpd).
-   */
+   *
    int argn, conflicting_args;
    char* cmdline_brightness;
 
@@ -146,7 +147,7 @@ void parse_args(int argc, char* argv[]) {
    max_brightness = 0;
    values_as_percentages = 0;
    brightness = 0;
-   strlcpy(backlight_path, BACKLIGHT_PATH, MAX_PATH_LEN);     /* Use the compiled-in default path unless told otherwise */
+   strlcpy(backlight_path, BACKLIGHT_PATH, MAX_PATH_LEN);     * Use the compiled-in default path unless told otherwise *
    conflicting_args = 0;
 
    if(argc == 1)
@@ -211,6 +212,80 @@ void parse_args(int argc, char* argv[]) {
       delta_brightness = parse_cmdline_int(cmdline_brightness);
    return;
 }
+*/
+
+void parse_args_new(int argc, char* argv[]) {
+
+   char opt; /* Used with getopt() below */
+
+   /* Initialise all the global variables */
+   set_backlight = 0;
+   get_backlight = 0;
+   max_brightness = 0;
+   values_as_percentages = 0;
+   brightness = 0;
+   strlcpy(backlight_path, BACKLIGHT_PATH, MAX_PATH_LEN);     /* Use the compiled-in default path unless told otherwise */
+   conflicting_args = 0;
+
+   if(argc == 1)
+      throw_error(ERR_NO_OPTS, ""); /* Arguments are required */
+
+   opterr = 0; /* We'll do our own error handling here */
+
+   /* Parse our command line options */
+   while((opt = getopt(argc, argv, "d:f:hi:mprvw:")) != -1) {
+      switch(opt) {
+      case 'd':
+	 if(conflicting_args)
+	    throw_error(ERR_OPT_CONFLICT, "");
+	 dec_brightness = 1;
+	 conflicting_args = 1;
+	 cmdline_brightness = optarg;
+	 break;
+      case 'f':
+	 strlcpy(backlight_path, optarg, MAX_PATH_LEN);
+	 break;
+      case 'h':
+	 usage();
+	 exit(0);
+	 break;
+      case 'i':
+	 if(conflicting_args)
+	    throw_error(ERR_OPT_CONFLICT, "");
+	 inc_brightness = 1;
+	 conflicting_args = 1;
+	 cmdline_brightness = optarg;
+	 break;
+      case 'm':
+	 if(conflicting_args)
+	    throw_error(ERR_OPT_CONFLICT, "");
+	 max_brightness = 1;
+	 conflicting_args = 1;
+	 break;
+      case 'p':
+	 values_as_percentages = 1;
+      case 'r':
+	 if(conflicting_args)
+	    throw_error(ERR_OPT_CONFLICT, "");
+	 get_backlight = 1;
+	 conflicting_args = 1;
+      case 'v':
+	 version();
+	 exit(0);
+	 break;
+      case 'w':
+	 if(conflicting_args)
+	    throw_error(ERR_OPT_CONFLICT, "");
+	 set_backlight = 1;
+	 cmdline_brightness = optarg;
+	 conflicting_args = 1;
+      case '?':
+	 if(optopt == );
+      }
+	 
+   }
+}
+
 
 unsigned int parse_cmdline_int(char* arg_to_parse) {
    int character = 0;
