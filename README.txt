@@ -1,5 +1,5 @@
 ###########################
-    brightlight v2-rc1
+    brightlight v2-rc2
 ###########################
 
 WARNING: This software version is a RELEASE CANDIDATE - it may not be stable.
@@ -7,7 +7,7 @@ WARNING: This software version is a RELEASE CANDIDATE - it may not be stable.
 Overview
 ========
 
-This is brightlight, version 2-rc1. brightlight is a program that can get and
+This is brightlight, version 2-rc2. brightlight is a program that can get and
 set the screen backlight brightness on Linux systems using the kernel sysfs 
 interface. I wrote this program because the backlight keys on my laptop's 
 keyboard didn't work after I installed Linux on it, and the bash script I was 
@@ -37,7 +37,7 @@ The compile-time default can always be overridden using the -f flag (see below).
 Usage
 =====
 
-Usage: ./a.out [OPTIONS]
+Usage: brightlight [OPTIONS]
 Options:
 
       -v         Print program version and exit.

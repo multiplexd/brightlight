@@ -1,4 +1,4 @@
-/* brightlight v2-rc1 - change the screen backlight brightness on Linux systems
+/* brightlight v2-rc2 - change the screen backlight brightness on Linux systems
 ** Copyright (C) 2016 David Miller <multiplexd@gmx.com>
 **
 ** This program is free software; you can redistribute it and/or
@@ -28,50 +28,7 @@
 ** also be statically linked by adding the -static flag.
 */
 
-
-#include <bsd/string.h>
-#include <ctype.h>
-#include <dirent.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <unistd.h>
-
-#define BACKLIGHT_PATH "/sys/class/backlight/intel_backlight"
-#define MAX_PATH_LEN 200
-#define EXTRA_PATH_LEN 20
-#define PROGRAM_NAME "brightlight"
-#define PROGRAM_VERSION "2-rc1"
-
-unsigned int get_backlight;
-unsigned int set_backlight;
-unsigned int max_brightness;
-unsigned int inc_brightness;
-unsigned int dec_brightness;
-int brightness;               /* Signed because of file I/O testing done in read_maximum_brightness() which requires signed ints */
-unsigned int maximum;
-unsigned int values_as_percentages;
-unsigned int delta_brightness;
-unsigned int current_brightness;
-char *argv0;
-char backlight_path[MAX_PATH_LEN];
-
-void change_existing_brightness();
-unsigned int get_value_from_file(char* path_suffix);
-void parse_args(int argc, char* argv[]);
-unsigned int parse_cmdline_int(char* arg_to_parse);
-void read_backlight_brightness();
-void read_maximum_brightness();
-void usage();
-void validate_args();
-void validate_control_directory();
-void validate_decrement(int reference_value); /* Argument must be unsigned in order to detect values below 0 */
-void validate_increment(unsigned int reference_value);
-void version();
-void write_backlight_brightness();
-void write_brightness_to_file(unsigned int bright);
+#include "brightlight.h"
 
 int main(int argc, char* argv[]) {
 
@@ -96,7 +53,7 @@ int main(int argc, char* argv[]) {
    } else if(inc_brightness || dec_brightness) {
       change_existing_brightness();
    } else {
-      fputs("Error parsing options. Pass the -h flag for help.\n", stderr);
+      throw_error(ERR_PARSE_OPTS, "");
    }
 
    exit(0);
@@ -163,16 +120,12 @@ unsigned int get_value_from_file(char* path_suffix) {
    strlcat(path, path_suffix, MAX_PATH_LEN + EXTRA_PATH_LEN);
 
    file_to_read = fopen(path, "r");
-   if(file_to_read == NULL) {
-      fprintf(stderr, "Error occured while trying to open %s file.\n", path_suffix);
-      exit(1);
-   }
+   if(file_to_read == NULL)
+      throw_error(ERR_OPEN_FILE, path_suffix);
 
    fscanf(file_to_read, "%d", &value);
-   if(value < 0) {
-      fprintf(stderr, "Could not read from %s file.\n", path_suffix);
-      exit(1);
-   }
+   if(value < 0)
+      throw_error(ERR_READ_FILE, path_suffix);
 
    fclose(file_to_read);
 
@@ -180,90 +133,100 @@ unsigned int get_value_from_file(char* path_suffix) {
 }
 
 void parse_args(int argc, char* argv[]) {
-   /*
-   ** This function, specifically the conditional loop and immediately following 
-   ** if statement, is based on the function parse_args() in thttpd.c of thttpd-2.27 
-   ** by Jef Poskanzer (http://www.acme.com/software/thttpd).
-   */
-   int argn, conflicting_args;
-   char* cmdline_brightness;
 
+   char opt; /* Used with getopt() below */
+   int conflicting_args, show_version, show_help;
+   char* cmdline_brightness;
+  
+   /* Initialise variables */
    set_backlight = 0;
    get_backlight = 0;
    max_brightness = 0;
    values_as_percentages = 0;
    brightness = 0;
-   strlcpy(backlight_path, BACKLIGHT_PATH, MAX_PATH_LEN);     /* Use the compiled-in default path unless told otherwise */
    conflicting_args = 0;
+   show_version = 0;
+   show_help = 0;
+   
+   strlcpy(backlight_path, BACKLIGHT_PATH, MAX_PATH_LEN);     /* Use the compiled-in default path unless told otherwise */
 
-   if(argc == 1) {
-      fputs("No options specified. Pass the -h flag for help.\n", stderr);
-      exit(1);
-   }
 
-   argn = 1;
-   while(argn < argc && argv[argn][0] == '-') {
-      if(strcmp(argv[argn], "-v") == 0) {
-         version();
-         exit(0);
-      } else if(strcmp(argv[argn], "-h") == 0) {
-         usage();
-         exit(0);
-      } else if(strcmp(argv[argn], "-r") == 0) {
-         if(conflicting_args) {
-            fputs("Conflicting options given! Pass the -h flag for help.\n", stderr);
-            exit(1);
-         }
-         get_backlight = 1;
-         conflicting_args = 1;
-      } else if(strcmp(argv[argn], "-w") == 0 && argn + 1 < argc) {
-         if(conflicting_args) {
-            fputs("Conflicting options given! Pass the -h flag for help.\n", stderr);
-            exit(1);
-         }
-         argn++;
-         set_backlight = 1;
-         cmdline_brightness = argv[argn];
-         conflicting_args = 1;
-      } else if(strcmp(argv[argn], "-f") == 0 && argn + 1 < argc) {
-         argn++;
-         strlcpy(backlight_path, argv[argn], MAX_PATH_LEN);
-      } else if(strcmp(argv[argn], "-p") == 0) {
-         values_as_percentages = 1;
-      } else if(strcmp(argv[argn], "-m") == 0) {
-         if(conflicting_args) {
-            fputs("Conflicting options given! Pass the -h flag for help.\n", stderr);
-            exit(1);
-         }
-         max_brightness = 1;
-         conflicting_args = 1;
-      } else if(strcmp(argv[argn], "-i") == 0 && argn + 1 < argc) {
-	 if(conflicting_args) {
- 	    fputs("Conflicting options given! Pass the -h flag for help.\n", stderr);
-	    exit(1);
-	 }
-	 inc_brightness = 1;
-	 argn++;
-	 cmdline_brightness = argv[argn];
-	 conflicting_args = 1;
-      } else if(strcmp(argv[argn], "-d") == 0 && argn + 1 < argc) {
-	 if(conflicting_args) {
- 	    fputs("Conflicting options given! Pass the -h flag for help.\n", stderr);
-	    exit(1);
-	 }
+   if(argc == 1)
+      throw_error(ERR_NO_OPTS, ""); /* Arguments are required */
+
+   opterr = 0; /* We'll do our own error handling here */
+
+   /* Parse our command line options */
+   while((opt = getopt(argc, argv, "d:f:hi:mprvw:")) != -1) {
+      switch(opt) {
+      case 'd':
+	 if(conflicting_args)
+	    throw_error(ERR_OPT_CONFLICT, "");
 	 dec_brightness = 1;
-	 argn++;
-	 cmdline_brightness = argv[argn];
 	 conflicting_args = 1;
-      } else {
-         fputs("Error parsing options. Pass the -h flag for help.\n", stderr);
-         exit(1);
+	 strlcpy(cmdline_brightness, optarg, CHAR_ARG_LEN);
+	 break;
+      case 'f':
+	 strlcpy(backlight_path, optarg, MAX_PATH_LEN);
+	 break;
+      case 'h':
+	 show_help = 1;
+	 break;
+      case 'i':
+	 if(conflicting_args)
+	    throw_error(ERR_OPT_CONFLICT, "");
+	 inc_brightness = 1;
+	 conflicting_args = 1;
+	 strlcpy(cmdline_brightness, optarg, CHAR_ARG_LEN);
+	 break;
+      case 'm':
+	 if(conflicting_args)
+	    throw_error(ERR_OPT_CONFLICT, "");
+	 max_brightness = 1;
+	 conflicting_args = 1;
+	 break;
+      case 'p':
+	 values_as_percentages = 1;
+	 break;
+      case 'r':
+	 if(conflicting_args)
+	    throw_error(ERR_OPT_CONFLICT, "");
+	 get_backlight = 1;
+	 conflicting_args = 1;
+	 break;
+      case 'v':
+	 show_version = 1;
+	 break;
+      case 'w':
+	 if(conflicting_args)
+	    throw_error(ERR_OPT_CONFLICT, "");
+	 set_backlight = 1;
+	 conflicting_args = 1;
+	 strlcpy(cmdline_brightness, optarg, CHAR_ARG_LEN);
+	 break;
+      case '?':
+	 if(optopt == 'd' || optopt == 'i' || optopt == 'f' || optopt == 'w')
+	    throw_error(ERR_OPT_INCOMPLETE, (char *) optopt);
+	 else
+	    throw_error(ERR_OPT_NOT_KNOWN, (char *) optopt);
+	 break;
       }
-      argn++;
+	 
    }
-   if(argn != argc) {
-      fputs("Error parsing options. Pass the -h flag for help.\n", stderr);
-      exit(1);
+
+   if(optind != argc)
+      throw_error(ERR_ARG_OVERLOAD, "");
+
+   if(show_help || show_version) { /* If either -v or -h are specified */
+      if(show_version)
+	 version();
+
+      if(show_version && show_help) /* If we get *both* -v and -h */
+	 putchar('\n'); /* Print a newline */
+
+      if(show_help)
+	 usage();
+      exit(0);
    }
 
    if(set_backlight)
@@ -271,17 +234,17 @@ void parse_args(int argc, char* argv[]) {
 
    if(inc_brightness || dec_brightness)
       delta_brightness = parse_cmdline_int(cmdline_brightness);
+
    return;
 }
+
 
 unsigned int parse_cmdline_int(char* arg_to_parse) {
    int character = 0;
 
    while(arg_to_parse[character] != '\0') {
-      if(character >= 5 || isdigit(arg_to_parse[character]) == 0) {
-         fputs("Invalid argument. Pass the -h flag for help.\n", stderr);
-         exit(1);
-      }
+      if(character >= 5 || isdigit(arg_to_parse[character]) == 0)
+	 throw_error(ERR_INVAL_OPT, "");
       character++;
    }
 
@@ -324,6 +287,56 @@ void read_maximum_brightness() {
    return;
 }
 
+void throw_error(enum errors err, char* opt_arg) {
+
+   switch(err) {
+   case ERR_OPEN_FILE:
+      fprintf(stderr, "Error occured while trying to open %s file.\n", opt_arg);
+      break;
+   case ERR_READ_FILE:
+      fprintf(stderr, "Could not read from %s file.\n", opt_arg);
+      break;
+   case ERR_WRITE_FILE:
+      fputs("Could not write brightness to brightness file.\n", stderr);
+      break;
+   case ERR_NO_OPTS:
+      fputs("No options specified. Pass the -h flag for help.\n", stderr);
+      break;
+   case ERR_OPT_CONFLICT:
+      fputs("Conflicting options given! Pass the -h flag for help.\n", stderr);
+      break;
+   case ERR_PARSE_OPTS:
+      fputs("Error parsing options. Pass the -h flag for help.\n", stderr);
+      break;
+   case ERR_INVAL_OPT:
+      fputs("Invalid argument. Pass the -h flag for help.\n", stderr);
+      break;
+   case ERR_FILE_IS_NOT_DIR:
+      fprintf(stderr, "%s is not a directory.\n", opt_arg);
+      break;
+   case ERR_ACCES_ON_DIR:
+      fprintf(stderr, "Could not access %s: Permission denied.\n", opt_arg);
+      break;
+   case ERR_CONTROL_DIR:
+      fputs("Could not access control directory.\n", stderr);
+      break;
+   case ERR_FILE_ACCES:
+      fprintf(stderr, "Control directory exists but could not find %s control file.\n", opt_arg);
+      break;
+   case ERR_OPT_NOT_KNOWN:
+      fprintf(stderr, "Unknown option '-%c'. Pass the -h flag for help.\n", opt_arg);
+      break;
+   case ERR_OPT_INCOMPLETE:
+      fprintf(stderr, "Option '-%c' reqiures an argument. Pass the -h flag for help.\n", opt_arg);
+      break;
+   case ERR_ARG_OVERLOAD:
+      fputs("Too many arguments. Pass the -h flag for help.\n", stderr);
+      break;
+   }
+
+   exit(1);
+}
+
 void usage() {
    printf("Usage: %s [OPTIONS]\n", argv0);
    printf("\
@@ -342,13 +355,14 @@ Options:\n\
       -d <val>   Decrement the backlight brightness level by <val>, where\n\
                  <val> is a positive integer.\n\
       -f <path>  Specify alternative path to backlight control directory, such\n\
-                 as \"/sys/class/backlight/intel_backlight/\"\n\
+                 as \"/sys/class/backlight/intel_backlight/\". Must be an\n\
+                 absolute path with a trailing slash.\n\
       -m         Show maximum brightness level of the screen backlight on the \n\
                  kernel's scale. The compile-time default control directory is\n\
                  used if -f is not specified. The -p flag is ignored when this\n\
                  option is specified.\n\n");
 
-   printf("The flags -r, -w, -m, -i and -d are mutually exclusive, however one of the \nthree is required.\n");
+   printf("The flags -r, -w, -m, -i and -d are mutually exclusive, however one of the \nfive is required.\n");
 
    return;
 }
@@ -357,15 +371,11 @@ void validate_args() {
 /* Don't check if brightness is an int, already done by parse_cmdline_int() */
 
    if(values_as_percentages) {
-      if(brightness < 0 || brightness > 100) {
-         fputs("Invalid argument. Pass the -h flag for help.\n", stderr);
-         exit(1);
-      }
+      if(brightness < 0 || brightness > 100) 
+	 throw_error(ERR_INVAL_OPT, "");
    } else {
-      if(brightness < 0 || brightness > maximum) {
-         fputs("Invalid argument. Pass the -h flag for help.\n", stderr);
-         exit(1);
-      }
+      if(brightness < 0 || brightness > maximum) 
+	 throw_error(ERR_INVAL_OPT, "");
    }
 
    return;
@@ -378,14 +388,12 @@ void validate_control_directory() {
    control_dir = opendir(backlight_path);
 
    if(control_dir == NULL) {
-      if(errno == ENOTDIR) {
-         fprintf(stderr, "%s is not a directory.\n", backlight_path);
-      } else if(errno == EACCES) {
-         fprintf(stderr, "Could not access %s: Permission denied.\n", backlight_path);
-      } else {
-         fputs("Could not access control directory.\n", stderr);
-         exit(1);
-      }
+      if(errno == ENOTDIR) 
+	 throw_error(ERR_FILE_IS_NOT_DIR, backlight_path);
+      else if(errno == EACCES) 
+         throw_error(ERR_ACCES_ON_DIR, backlight_path);
+      else 
+	 throw_error(ERR_CONTROL_DIR, "");
    }
 
    closedir(control_dir);
@@ -393,34 +401,27 @@ void validate_control_directory() {
    strlcpy(path, backlight_path, MAX_PATH_LEN);
    strlcat(path, "/brightness", EXTRA_PATH_LEN);
 
-   if(access(path, F_OK) != 0) {
-      fputs("Control directory exists but could not find brightness control file.\n", stderr);
-      exit(1);
-   }
+   if(access(path, F_OK) != 0)
+      throw_error(ERR_FILE_ACCES, "brightness");
 
    strlcpy(path, backlight_path, MAX_PATH_LEN);
    strlcat(path, "/max_brightness", EXTRA_PATH_LEN);
 
-   if(access(path, F_OK) != 0) {
-      fputs("Control directory exists but could not find max_brightness file.\n", stderr);
-      exit(1);
-   }
+   if(access(path, F_OK) != 0) 
+      throw_error(ERR_FILE_ACCES, "max_brightness");
+      
    return;
 }
 
-void validate_decrement(int reference_value) {
+void validate_decrement(unsigned int reference_value) {
 
    if(values_as_percentages) {
       int current = (reference_value * 100) / maximum;
-      if(current - (int) delta_brightness < 0) {
-         fputs("Invalid option given. Pass the -h option for help.\n", stderr);
-	 exit(1);
-      }
+      if(current - (int) delta_brightness < 0) 
+	 throw_error(ERR_INVAL_OPT, "");
    } else {
-      if(reference_value - (int) delta_brightness < 0) {
-	 fputs("Invalid option given. Pass the -h option for help.\n", stderr);
-	 exit(1);
-      }
+      if((int) reference_value - (int) delta_brightness < 0) 
+	 throw_error(ERR_INVAL_OPT, "");
    }
 
    return;
@@ -430,15 +431,11 @@ void validate_increment(unsigned int reference_value) {
 
    if(values_as_percentages) {
       unsigned int current = (reference_value * 100) / maximum;
-      if(current + delta_brightness > 100) {
-         fputs("Invalid option given. Pass the -h option for help.\n", stderr);
-	 exit(1);
-      }
+      if(current + delta_brightness > 100) 
+	 throw_error(ERR_INVAL_OPT, "");
    } else {
-      if(reference_value + delta_brightness > maximum) {
-	 fputs("Invalid option given. Pass the -h option for help.\n", stderr);
-	 exit(1);
-      }
+      if(reference_value + delta_brightness > maximum) 
+	 throw_error(ERR_INVAL_OPT, "");
    }
 
    return;
@@ -446,7 +443,7 @@ void validate_increment(unsigned int reference_value) {
 
 void version() {
    printf("%s v%s\n", PROGRAM_NAME, PROGRAM_VERSION);
-   puts("Copyright (C) 2016 David Miller <multiplexd@gmx.com");
+   puts("Copyright (C) 2016 David Miller <multiplexd@gmx.com>");
    printf("\
 This is free software under the terms of the GNU General Public License, \n\
 version 2 or later. You are free to use, modify and redistribute it, however \n\
@@ -490,15 +487,11 @@ void write_brightness_to_file(unsigned int bright) {
    strlcat(path, "/brightness", MAX_PATH_LEN + EXTRA_PATH_LEN);
 
    brightness_file = fopen(path, "w");
-   if(brightness_file == NULL) {
-      fputs("Error occured while trying to open brightness file.\n", stderr);
-      exit(1);
-   }
+   if(brightness_file == NULL) 
+      throw_error(ERR_OPEN_FILE, "brightness");
 
-   if(fprintf(brightness_file, "%d", bright) < 0) {
-      fputs("Could not write brightness to brightness file.\n", stderr);
-      exit(1);
-   }
+   if(fprintf(brightness_file, "%d", bright) < 0) 
+      throw_error(ERR_WRITE_FILE, "");
 
    fclose(brightness_file);
 

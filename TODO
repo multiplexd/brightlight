@@ -16,4 +16,11 @@
  - Add options to increment or decrement the backlight brightness as well as 
    setting it at specific values (such as '-i <val>' and '-d <val>').
 
+ - Generally modularise the program structure and start using local header files.
+
+ - Introduce a suitable build system.
+
+ - Make the program compatible with relative paths and directory names without
+   trailing slashes
+
 ###################################################################################
