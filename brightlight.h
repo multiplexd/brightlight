@@ -68,7 +68,6 @@ unsigned int get_value_from_file(char* path_suffix);
 void parse_args(int argc, char* argv[]);
 unsigned int parse_cmdline_int(char* arg_to_parse);
 void read_backlight_brightness();
-void read_maximum_brightness();
 void throw_error(enum errors, char* opt_arg);
 void usage();
 void validate_args();

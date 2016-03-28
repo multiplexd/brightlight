@@ -44,18 +44,17 @@ int main(int argc, char* argv[]) {
       validate_args();
    }
 
-   if(get_backlight) {
+   if(get_backlight) 
       read_backlight_brightness();
-   } else if(set_backlight) {
+   else if(set_backlight) 
       write_backlight_brightness();
-   } else if(max_brightness) {
-      read_maximum_brightness();
-   } else if(inc_brightness || dec_brightness) {
+   else if(max_brightness) 
+      printf("Maximum backlight brightness is: %d.\n", maximum);
+   else if(inc_brightness || dec_brightness) 
       change_existing_brightness();
-   } else {
+   else
       throw_error(ERR_PARSE_OPTS, "");
-   }
-
+      
    exit(0);
 }
 
@@ -268,23 +267,6 @@ void read_backlight_brightness() {
    }
 
    printf("Current backlight brightness is: %d%s\n", outval, out_string_end);
-
-   return;
-}
-
-void read_maximum_brightness() {
-   unsigned int outval;
-   char* out_string_end;
-
-   if(values_as_percentages) {
-      outval = (maximum * 100) / maximum;
-      out_string_end = "%.";
-   } else {
-      outval = maximum;
-      out_string_end = ".";
-   }
-
-   printf("Maximum backlight brightness is: %d%s\n", outval, out_string_end);
 
    return;
 }
