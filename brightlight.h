@@ -66,9 +66,11 @@ enum errors {
 
 static const struct option longopts[] = {
    {"decrement", required_argument, NULL, 'd'},
+   {"decrease", required_argument, NULL, 'd'},
    {"file", required_argument, NULL, 'f'},
    {"help", no_argument, NULL, 'h'},
    {"increment", required_argument, NULL, 'i'},
+   {"increase", required_argument, NULL, 'i'},
    {"maximum", no_argument, NULL, 'm'},
    {"percentage", no_argument, NULL, 'p'},
    {"read", no_argument, NULL, 'r'},
