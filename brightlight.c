@@ -284,16 +284,16 @@ void throw_error(enum errors err, char* opt_arg) {
       fputs("Could not write brightness to brightness file.\n", stderr);
       break;
    case ERR_NO_OPTS:
-      fputs("No options specified. Pass the -h flag for help.\n", stderr);
+      fputs("No options specified. Pass the --help flag for help.\n", stderr);
       break;
    case ERR_OPT_CONFLICT:
-      fputs("Conflicting options given! Pass the -h flag for help.\n", stderr);
+      fputs("Conflicting options given! Pass the --help flag for help.\n", stderr);
       break;
    case ERR_PARSE_OPTS:
-      fputs("Error parsing options. Pass the -h flag for help.\n", stderr);
+      fputs("Error parsing options. Pass the --help flag for help.\n", stderr);
       break;
    case ERR_INVAL_OPT:
-      fputs("Invalid argument. Pass the -h flag for help.\n", stderr);
+      fputs("Invalid argument. Pass the --help flag for help.\n", stderr);
       break;
    case ERR_FILE_IS_NOT_DIR:
       fprintf(stderr, "%s is not a directory.\n", opt_arg);
@@ -308,13 +308,13 @@ void throw_error(enum errors err, char* opt_arg) {
       fprintf(stderr, "Control directory exists but could not find %s control file.\n", opt_arg);
       break;
    case ERR_OPT_NOT_KNOWN:
-      fprintf(stderr, "Unknown option '-%c'. Pass the -h flag for help.\n", opt_arg);
+      fprintf(stderr, "Unknown option. Pass the --help flag for help.\n", opt_arg);
       break;
    case ERR_OPT_INCOMPLETE:
-      fprintf(stderr, "Option '-%c' reqiures an argument. Pass the -h flag for help.\n", opt_arg);
+      fprintf(stderr, "Option requires an argument. Pass the --help flag for help.\n", opt_arg);
       break;
    case ERR_ARG_OVERLOAD:
-      fputs("Too many arguments. Pass the -h flag for help.\n", stderr);
+      fputs("Too many arguments. Pass the --help flag for help.\n", stderr);
       break;
    }
 
