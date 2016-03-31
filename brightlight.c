@@ -156,7 +156,7 @@ void parse_args(int argc, char* argv[]) {
    opterr = 0; /* We'll do our own error handling here */
 
    /* Parse our command line options */
-   while((opt = getopt(argc, argv, "d:f:hi:mprvw:")) != -1) {
+   while((opt = getopt_long(argc, argv, "d:f:hi:mprvw:", longopts, NULL)) != -1) {
       switch(opt) {
       case 'd':
 	 if(conflicting_args)

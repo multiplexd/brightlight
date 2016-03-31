@@ -20,6 +20,7 @@
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
+#include <getopt.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -61,6 +62,19 @@ enum errors {
    ERR_OPT_NOT_KNOWN,      /* Unkown option specified */
    ERR_OPT_INCOMPLETE,     /* Option requires an argument */
    ERR_ARG_OVERLOAD        /* Too may arguments were given */
+};
+
+static const struct option longopts[] = {
+   {"decrement", required_argument, NULL, 'd'},
+   {"file", required_argument, NULL, 'f'},
+   {"help", no_argument, NULL, 'h'},
+   {"increment", required_argument, NULL, 'i'},
+   {"maximum", no_argument, NULL, 'm'},
+   {"percentage", no_argument, NULL, 'p'},
+   {"read", no_argument, NULL, 'r'},
+   {"version", no_argument, NULL, 'v'},
+   {"write", required_argument, NULL, 'w'},
+   {0, 0, 0, 0},
 };
 
 void change_existing_brightness();
