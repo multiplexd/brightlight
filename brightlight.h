@@ -1,4 +1,4 @@
-/* This file is part of brightlight v2-rc3
+/* This file is part of brightlight v2-rc4
 ** Copyright (C) 2016 David Miller <multiplexd@gmx.com>
 **
 ** This program is free software; you can redistribute it and/or
@@ -20,6 +20,7 @@
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
+#include <getopt.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -31,7 +32,7 @@
 #define EXTRA_PATH_LEN 20
 #define CHAR_ARG_LEN 10
 #define PROGRAM_NAME "brightlight"
-#define PROGRAM_VERSION "2-rc3"
+#define PROGRAM_VERSION "2-rc4"
 
 unsigned int get_backlight;
 unsigned int set_backlight;
@@ -63,12 +64,26 @@ enum errors {
    ERR_ARG_OVERLOAD        /* Too may arguments were given */
 };
 
+static const struct option longopts[] = {
+   {"decrement", required_argument, NULL, 'd'},
+   {"decrease", required_argument, NULL, 'd'},
+   {"file", required_argument, NULL, 'f'},
+   {"help", no_argument, NULL, 'h'},
+   {"increment", required_argument, NULL, 'i'},
+   {"increase", required_argument, NULL, 'i'},
+   {"maximum", no_argument, NULL, 'm'},
+   {"percentage", no_argument, NULL, 'p'},
+   {"read", no_argument, NULL, 'r'},
+   {"version", no_argument, NULL, 'v'},
+   {"write", required_argument, NULL, 'w'},
+   {0, 0, 0, 0},
+};
+
 void change_existing_brightness();
 unsigned int get_value_from_file(char* path_suffix);
 void parse_args(int argc, char* argv[]);
 unsigned int parse_cmdline_int(char* arg_to_parse);
 void read_backlight_brightness();
-void read_maximum_brightness();
 void throw_error(enum errors, char* opt_arg);
 void usage();
 void validate_args();

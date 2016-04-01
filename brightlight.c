@@ -1,4 +1,4 @@
-/* brightlight v2-rc3 - change the screen backlight brightness on Linux systems
+/* brightlight v2-rc4 - change the screen backlight brightness on Linux systems
 ** Copyright (C) 2016 David Miller <multiplexd@gmx.com>
 **
 ** This program is free software; you can redistribute it and/or
@@ -44,18 +44,17 @@ int main(int argc, char* argv[]) {
       validate_args();
    }
 
-   if(get_backlight) {
+   if(get_backlight) 
       read_backlight_brightness();
-   } else if(set_backlight) {
+   else if(set_backlight) 
       write_backlight_brightness();
-   } else if(max_brightness) {
-      read_maximum_brightness();
-   } else if(inc_brightness || dec_brightness) {
+   else if(max_brightness) 
+      printf("Maximum backlight brightness is: %d.\n", maximum);
+   else if(inc_brightness || dec_brightness) 
       change_existing_brightness();
-   } else {
+   else
       throw_error(ERR_PARSE_OPTS, "");
-   }
-
+      
    exit(0);
 }
 
@@ -157,61 +156,61 @@ void parse_args(int argc, char* argv[]) {
    opterr = 0; /* We'll do our own error handling here */
 
    /* Parse our command line options */
-   while((opt = getopt(argc, argv, "d:f:hi:mprvw:")) != -1) {
+   while((opt = getopt_long(argc, argv, "d:f:hi:mprvw:", longopts, NULL)) != -1) {
       switch(opt) {
       case 'd':
-	 if(conflicting_args)
-	    throw_error(ERR_OPT_CONFLICT, "");
-	 dec_brightness = 1;
-	 conflicting_args = 1;
-	 cmdline_brightness = optarg;
-	 break;
+         if(conflicting_args)
+            throw_error(ERR_OPT_CONFLICT, "");
+         dec_brightness = 1;
+         conflicting_args = 1;
+         cmdline_brightness = optarg;
+         break;
       case 'f':
-	 strlcpy(backlight_path, optarg, MAX_PATH_LEN);
-	 break;
+         strlcpy(backlight_path, optarg, MAX_PATH_LEN);
+         break;
       case 'h':
-	 show_help = 1;
-	 break;
+         show_help = 1;
+         break;
       case 'i':
-	 if(conflicting_args)
-	    throw_error(ERR_OPT_CONFLICT, "");
-	 inc_brightness = 1;
-	 conflicting_args = 1;
-	 cmdline_brightness = optarg;
-	 break;
+         if(conflicting_args)
+            throw_error(ERR_OPT_CONFLICT, "");
+         inc_brightness = 1;
+         conflicting_args = 1;
+         cmdline_brightness = optarg;
+         break;
       case 'm':
-	 if(conflicting_args)
-	    throw_error(ERR_OPT_CONFLICT, "");
-	 max_brightness = 1;
-	 conflicting_args = 1;
-	 break;
+         if(conflicting_args)
+            throw_error(ERR_OPT_CONFLICT, "");
+         max_brightness = 1;
+         conflicting_args = 1;
+         break;
       case 'p':
-	 values_as_percentages = 1;
-	 break;
+         values_as_percentages = 1;
+         break;
       case 'r':
-	 if(conflicting_args)
-	    throw_error(ERR_OPT_CONFLICT, "");
-	 get_backlight = 1;
-	 conflicting_args = 1;
-	 break;
+         if(conflicting_args)
+            throw_error(ERR_OPT_CONFLICT, "");
+         get_backlight = 1;
+         conflicting_args = 1;
+         break;
       case 'v':
-	 show_version = 1;
-	 break;
+         show_version = 1;
+         break;
       case 'w':
-	 if(conflicting_args)
-	    throw_error(ERR_OPT_CONFLICT, "");
-	 set_backlight = 1;
-	 conflicting_args = 1;
-	 cmdline_brightness = optarg;
-	 break;
+         if(conflicting_args)
+            throw_error(ERR_OPT_CONFLICT, "");
+         set_backlight = 1;
+         conflicting_args = 1;
+         cmdline_brightness = optarg;
+         break;
       case '?':
-	 if(optopt == 'd' || optopt == 'i' || optopt == 'f' || optopt == 'w')
-	    throw_error(ERR_OPT_INCOMPLETE, (char *) optopt);
-	 else
-	    throw_error(ERR_OPT_NOT_KNOWN, (char *) optopt);
-	 break;
+         if(optopt == 'd' || optopt == 'i' || optopt == 'f' || optopt == 'w')
+            throw_error(ERR_OPT_INCOMPLETE, (char *) optopt);
+         else
+            throw_error(ERR_OPT_NOT_KNOWN, (char *) optopt);
+         break;
       }
-	 
+         
    }
 
    if(optind != argc)
@@ -219,13 +218,13 @@ void parse_args(int argc, char* argv[]) {
 
    if(show_help || show_version) { /* If either -v or -h are specified */
       if(show_version)
-	 version();
+         version();
 
       if(show_version && show_help) /* If we get *both* -v and -h */
-	 putchar('\n'); /* Print a newline */
+         putchar('\n'); /* Print a newline */
 
       if(show_help)
-	 usage();
+         usage();
       exit(0);
    }
 
@@ -245,7 +244,7 @@ unsigned int parse_cmdline_int(char* arg_to_parse) {
    while(arg_to_parse[character] != '\0') {
 
       if(character >= 5 || isdigit(arg_to_parse[character]) == 0)
-	 throw_error(ERR_INVAL_OPT, "");
+         throw_error(ERR_INVAL_OPT, "");
       character++;
 
    }
@@ -272,23 +271,6 @@ void read_backlight_brightness() {
    return;
 }
 
-void read_maximum_brightness() {
-   unsigned int outval;
-   char* out_string_end;
-
-   if(values_as_percentages) {
-      outval = (maximum * 100) / maximum;
-      out_string_end = "%.";
-   } else {
-      outval = maximum;
-      out_string_end = ".";
-   }
-
-   printf("Maximum backlight brightness is: %d%s\n", outval, out_string_end);
-
-   return;
-}
-
 void throw_error(enum errors err, char* opt_arg) {
 
    switch(err) {
@@ -302,16 +284,16 @@ void throw_error(enum errors err, char* opt_arg) {
       fputs("Could not write brightness to brightness file.\n", stderr);
       break;
    case ERR_NO_OPTS:
-      fputs("No options specified. Pass the -h flag for help.\n", stderr);
+      fputs("No options specified. Pass the --help flag for help.\n", stderr);
       break;
    case ERR_OPT_CONFLICT:
-      fputs("Conflicting options given! Pass the -h flag for help.\n", stderr);
+      fputs("Conflicting options given! Pass the --help flag for help.\n", stderr);
       break;
    case ERR_PARSE_OPTS:
-      fputs("Error parsing options. Pass the -h flag for help.\n", stderr);
+      fputs("Error parsing options. Pass the --help flag for help.\n", stderr);
       break;
    case ERR_INVAL_OPT:
-      fputs("Invalid argument. Pass the -h flag for help.\n", stderr);
+      fputs("Invalid argument. Pass the --help flag for help.\n", stderr);
       break;
    case ERR_FILE_IS_NOT_DIR:
       fprintf(stderr, "%s is not a directory.\n", opt_arg);
@@ -326,13 +308,13 @@ void throw_error(enum errors err, char* opt_arg) {
       fprintf(stderr, "Control directory exists but could not find %s control file.\n", opt_arg);
       break;
    case ERR_OPT_NOT_KNOWN:
-      fprintf(stderr, "Unknown option '-%c'. Pass the -h flag for help.\n", opt_arg);
+      fprintf(stderr, "Unknown option. Pass the --help flag for help.\n", opt_arg);
       break;
    case ERR_OPT_INCOMPLETE:
-      fprintf(stderr, "Option '-%c' reqiures an argument. Pass the -h flag for help.\n", opt_arg);
+      fprintf(stderr, "Option requires an argument. Pass the --help flag for help.\n", opt_arg);
       break;
    case ERR_ARG_OVERLOAD:
-      fputs("Too many arguments. Pass the -h flag for help.\n", stderr);
+      fputs("Too many arguments. Pass the --help flag for help.\n", stderr);
       break;
    }
 
@@ -344,27 +326,30 @@ void usage() {
    printf("\
 Options:\n\
 \n\
-      -v         Print program version and exit.\n\
-      -h         Show this help message.\n\
-      -p         Read or write the brightness level as a percentage (0 to 100)\n\
-                 instead of the internal scale the kernel uses (such as e.g. 0\n\
-                 to 7812).\n\
-      -r         Read the backlight brightness level.\n\
-      -w <val>   Set the backlight brightness level to <val>, where <val> is a\n\
-                 a positive integer.\n\
-      -i <val>   Increment the backlight brightness level by <val>, where\n\
-                 <val> is a positive integer.\n\
-      -d <val>   Decrement the backlight brightness level by <val>, where\n\
-                 <val> is a positive integer.\n\
-      -f <path>  Specify alternative path to backlight control directory, such\n\
-                 as \"/sys/class/backlight/intel_backlight/\". Must be an\n\
-                 absolute path with a trailing slash.\n\
-      -m         Show maximum brightness level of the screen backlight on the \n\
-                 kernel's scale. The compile-time default control directory is\n\
-                 used if -f is not specified. The -p flag is ignored when this\n\
-                 option is specified.\n\n");
+  -v, --version          Print program version and exit.\n\
+  -h, --help             Show this help message.\n\
+  -p, --percentage       Read or write the brightness level as a percentage \n\
+                         (0 to 100) instead of the internal scale the kernel \n\
+                         uses (such as e.g. 0 to 7812).\n\
+  -r, --read             Read the backlight brightness level.\n\
+  -w, --write <val>      Set the backlight brightness level to <val>, where \n\
+                         <val> is a positive integer.\n\
+  -i, --increment <val>  Increment/increase the backlight brightness level by\n\
+      --increase <val>   <val>, where <val> is a positive integer.\n\
+  -d, --decrement <val>  Decrement/decrease the backlight brightness level by\n\
+      --decrease <val>   <val>, where <val> is a positive integer.\n\
+  -f, --file <path>      Specify alternative path to backlight control \n\
+                         directory. This is likely to be a subdirectory under\n\
+                         \"/sys/class/backlight/\". Must be an absolute path \n\
+                         with a trailing slash.\n\
+  -m, --maximum          Show maximum brightness level of the screen \n\
+                         backlight on the kernel's scale. The compile-time \n\
+                         default control directory is used if -f or --file is\n\
+                         not specified. The -p and --percentage flags are \n\
+                         ignored when this option is specified.\n\n");
 
-   printf("The flags -r, -w, -m, -i and -d are mutually exclusive, however one of the \nfive is required.\n");
+   printf("The flags -r, -w, -m, -i, -d and their corresponding long options are mutually \nexclusive, \
+however one of them is required.\n");
 
    return;
 }
@@ -374,10 +359,10 @@ void validate_args() {
 
    if(values_as_percentages) {
       if(brightness < 0 || brightness > 100) 
-	 throw_error(ERR_INVAL_OPT, "");
+         throw_error(ERR_INVAL_OPT, "");
    } else {
       if(brightness < 0 || brightness > maximum) 
-	 throw_error(ERR_INVAL_OPT, "");
+         throw_error(ERR_INVAL_OPT, "");
    }
 
    return;
@@ -391,11 +376,11 @@ void validate_control_directory() {
 
    if(control_dir == NULL) {
       if(errno == ENOTDIR) 
-	 throw_error(ERR_FILE_IS_NOT_DIR, backlight_path);
+         throw_error(ERR_FILE_IS_NOT_DIR, backlight_path);
       else if(errno == EACCES) 
          throw_error(ERR_ACCES_ON_DIR, backlight_path);
       else 
-	 throw_error(ERR_CONTROL_DIR, "");
+         throw_error(ERR_CONTROL_DIR, "");
    }
 
    closedir(control_dir);
@@ -420,10 +405,10 @@ void validate_decrement(unsigned int reference_value) {
    if(values_as_percentages) {
       int current = (reference_value * 100) / maximum;
       if(current - (int) delta_brightness < 0) 
-	 throw_error(ERR_INVAL_OPT, "");
+         throw_error(ERR_INVAL_OPT, "");
    } else {
       if((int) reference_value - (int) delta_brightness < 0) 
-	 throw_error(ERR_INVAL_OPT, "");
+         throw_error(ERR_INVAL_OPT, "");
    }
 
    return;
@@ -434,10 +419,10 @@ void validate_increment(unsigned int reference_value) {
    if(values_as_percentages) {
       unsigned int current = (reference_value * 100) / maximum;
       if(current + delta_brightness > 100) 
-	 throw_error(ERR_INVAL_OPT, "");
+         throw_error(ERR_INVAL_OPT, "");
    } else {
       if(reference_value + delta_brightness > maximum) 
-	 throw_error(ERR_INVAL_OPT, "");
+         throw_error(ERR_INVAL_OPT, "");
    }
 
    return;

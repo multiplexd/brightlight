@@ -1,5 +1,5 @@
 ###########################
-    brightlight v2-rc3
+    brightlight v2-rc4
 ###########################
 
 WARNING: This software version is a RELEASE CANDIDATE - it may not be stable.
@@ -37,30 +37,33 @@ The compile-time default can always be overridden using the -f flag (see below).
 Usage
 =====
 
-Usage: brightlight [OPTIONS]
 Options:
 
-      -v         Print program version and exit.
-      -h         Show this help message.
-      -p         Read or write the brightness level as a percentage (0 to 100)
-                 instead of the internal scale the kernel uses (such as e.g. 0
-                 to 7812).
-      -r         Read the backlight brightness level.
-      -w <val>   Set the backlight brightness level to <val>, where <val> is a
-                 a positive integer.
-      -i <val>   Increment the backlight brightness level to <val>, where
-                 <val> is a positive integer.
-      -d <val>   Decrement the backlight brightness level to <val>, where
-                 <val> is a positive integer.
-      -f <path>  Specify alternative path to backlight control directory, such
-                 as "/sys/class/backlight/intel_backlight/"
-      -m         Show maximum brightness level of the screen backlight on the 
-                 kernel's scale. The compile-time default control directory is
-                 used if -f is not specified. The -p flag is ignored when this
-                 option is specified.
+  -v, --version          Print program version and exit.
+  -h, --help             Show this help message.
+  -p, --percentage       Read or write the brightness level as a percentage 
+                         (0 to 100) instead of the internal scale the kernel 
+                         uses (such as e.g. 0 to 7812).
+  -r, --read             Read the backlight brightness level.
+  -w, --write <val>      Set the backlight brightness level to <val>, where 
+                         <val> is a positive integer.
+  -i, --increment <val>  Increment/increase the backlight brightness level by
+      --increase <val>   <val>, where <val> is a positive integer.
+  -d, --decrement <val>  Decrement/decrease the backlight brightness level by
+      --decrease <val>   <val>, where <val> is a positive integer.
+  -f, --file <path>      Specify alternative path to backlight control 
+                         directory. This is likely to be a subdirectory under
+                         "/sys/class/backlight/". Must be an absolute path 
+                         with a trailing slash.
+  -m, --maximum          Show maximum brightness level of the screen 
+                         backlight on the kernel's scale. The compile-time 
+                         default control directory is used if -f or --file is
+                         not specified. The -p and --percentage flags are 
+                         ignored when this option is specified.
 
-The flags -r, -w, -m, -i and -d are mutually exclusive, however one of the 
-three is required.
+The flags -r, -w, -m, -i, -d and their corresponding long options are mutually
+exclusive however one of them is required.
+
 
 Changelog:
 ==========
