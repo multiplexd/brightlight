@@ -1,5 +1,5 @@
 ###########################
-    brightlight v2-rc3
+    brightlight v2-rc4
 ###########################
 
 WARNING: This software version is a RELEASE CANDIDATE - it may not be stable.

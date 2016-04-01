@@ -1,4 +1,4 @@
-/* This file is part of brightlight v2-rc3
+/* This file is part of brightlight v2-rc4
 ** Copyright (C) 2016 David Miller <multiplexd@gmx.com>
 **
 ** This program is free software; you can redistribute it and/or
@@ -32,7 +32,7 @@
 #define EXTRA_PATH_LEN 20
 #define CHAR_ARG_LEN 10
 #define PROGRAM_NAME "brightlight"
-#define PROGRAM_VERSION "2-rc3"
+#define PROGRAM_VERSION "2-rc4"
 
 unsigned int get_backlight;
 unsigned int set_backlight;
