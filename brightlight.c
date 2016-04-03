@@ -70,7 +70,7 @@ void change_existing_brightness() {
    if(inc_brightness) { 
       validate_increment(current);      
    } else if(dec_brightness) {
-      validate_decrement((int) current);
+      validate_decrement(current);
    }
 
    if(inc_brightness) {
