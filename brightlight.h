@@ -16,23 +16,14 @@
 ** Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
-#include <bsd/string.h>
-#include <ctype.h>
-#include <dirent.h>
-#include <errno.h>
-#include <getopt.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <unistd.h>
-
 #define BACKLIGHT_PATH "/sys/class/backlight/intel_backlight"
 #define MAX_PATH_LEN 200
 #define EXTRA_PATH_LEN 20
 #define CHAR_ARG_LEN 10
 #define PROGRAM_NAME "brightlight"
 #define PROGRAM_VERSION "2"
+
+/* Global variables */
 
 unsigned int get_backlight;
 unsigned int set_backlight;
@@ -46,6 +37,8 @@ unsigned int delta_brightness;
 unsigned int current_brightness;
 char *argv0;
 char backlight_path[MAX_PATH_LEN];
+
+/* List of errors */
 
 enum errors {
    ERR_OPEN_FILE,          /* Error trying to open a file */
@@ -64,6 +57,8 @@ enum errors {
    ERR_ARG_OVERLOAD        /* Too may arguments were given */
 };
 
+/* Getopt_long options structure */
+
 static const struct option longopts[] = {
    {"decrement", required_argument, NULL, 'd'},
    {"decrease", required_argument, NULL, 'd'},
@@ -78,6 +73,8 @@ static const struct option longopts[] = {
    {"write", required_argument, NULL, 'w'},
    {0, 0, 0, 0},
 };
+
+/* Function prototypes */
 
 void change_existing_brightness();
 unsigned int get_value_from_file(char* path_suffix);

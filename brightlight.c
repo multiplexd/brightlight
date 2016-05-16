@@ -28,51 +28,83 @@
 ** also be statically linked by adding the -static flag.
 */
 
+#include <bsd/string.h>
+#include <ctype.h>
+#include <dirent.h>
+#include <errno.h>
+#include <getopt.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "brightlight.h"
 
 int main(int argc, char* argv[]) {
 
+   /* Record the program invocation name, should it be needed */
    argv0 = argv[0];
 
+   /* Parse the command line arguments */
    parse_args(argc, argv);
 
+   /* Make sure the sysfs control directory is accessible */
    validate_control_directory();
 
+   /* The maximum backlight value isn't always needed, but it is required often
+      enough to always read it */
    maximum = get_value_from_file("/max_brightness");
 
+   /* If we're setting the backlight explicitly then check that our command line
+      arguments are sane. Cannot be performed inside parse_args because the 
+      maximum backlight brightness needs to be known. */
    if(set_backlight) {
       validate_args();
    }
 
+   /* Take action based on global flags that are set */
    if(get_backlight) 
       read_backlight_brightness();
    else if(set_backlight) 
       write_backlight_brightness();
-   else if(max_brightness) 
+   else if(max_brightness)
+      /* Maximum brightness is known at this point */
       printf("Maximum backlight brightness is: %d.\n", maximum);
    else if(inc_brightness || dec_brightness) 
       change_existing_brightness();
    else
+      /* Something went wrong */
       throw_error(ERR_PARSE_OPTS, "");
-      
+
+   /* Things must have worked if we get here; exit cleanly */
    exit(0);
 }
 
 void change_existing_brightness() {
+
+   /* Increment or decrement the backlight brightness */
+   
    unsigned int oldval;
    unsigned int current;
    unsigned int val_to_write;
-   char* out_string_end;
+   char* out_string_end;       /* Placeholder strings to format the program output nicely */
    char* out_string_filler;
-   
+
+   /* The current backlight brightness is required so we can tell if our
+      command line arguments are sane or not */
    current = get_value_from_file("/brightness");
 
+   /* Check the command line arguments */
    if(inc_brightness) { 
       validate_increment(current);      
    } else if(dec_brightness) {
       validate_decrement(current);
    }
 
+   /* Calculate the value that should be written to the control file, account
+      for values as percentages and generate placeholder strings for formatting
+      the program output */
    if(inc_brightness) {
       if(values_as_percentages) {
          val_to_write = current + ((delta_brightness * maximum) / 100);
@@ -99,8 +131,10 @@ void change_existing_brightness() {
       }
    }
 
+   /* Actually write the required value to the control file */
    write_brightness_to_file(val_to_write);
 
+   /* Display an informational message on stdout */
    if(inc_brightness) {
       printf("Changed backlight brightness: %d%s=> %d%s\n", oldval, out_string_filler, oldval + delta_brightness, out_string_end);      
    } else if(dec_brightness) {
@@ -111,28 +145,42 @@ void change_existing_brightness() {
 }
 
 unsigned int get_value_from_file(char* path_suffix) {
-   int value = -1;
-   FILE* file_to_read;
-   char path[MAX_PATH_LEN + EXTRA_PATH_LEN];
 
+   /* Read a file from the backlight brightness control directory */
+
+   int value = -1;  /* Initialise to error value to fail safe */
+   FILE* file_to_read;
+   char path[MAX_PATH_LEN + EXTRA_PATH_LEN]; /* Buffer to hold the path of the file we are going to read */
+
+   /* Safely copy the path to the backlight control directory into the buffer
+      and append the subpath of the file we are going to read */
    strlcpy(path, backlight_path, MAX_PATH_LEN);
    strlcat(path, path_suffix, MAX_PATH_LEN + EXTRA_PATH_LEN);
 
+   /* Try to open the file we are going to read */
    file_to_read = fopen(path, "r");
    if(file_to_read == NULL)
+      /* Something went wrong and the file couldn't be opened */
       throw_error(ERR_OPEN_FILE, path_suffix);
 
+   /* Try to read a value from the file */
    fscanf(file_to_read, "%d", &value);
    if(value < 0)
+      /* The value variable wasn't changed, so something went wrong */
       throw_error(ERR_READ_FILE, path_suffix);
 
+   /* Clean up after ourselves */
    fclose(file_to_read);
 
+   /* Cast the value read from the file to an unsigned value as used by the 
+      rest of the program */
    return (unsigned int) value;
 }
 
 void parse_args(int argc, char* argv[]) {
 
+   /* Pares the command line arguments */
+   
    char opt; /* Used with getopt() below */
    int conflicting_args, show_version, show_help;
    char* cmdline_brightness;
@@ -146,16 +194,16 @@ void parse_args(int argc, char* argv[]) {
    conflicting_args = 0;
    show_version = 0;
    show_help = 0;
-   
-   strlcpy(backlight_path, BACKLIGHT_PATH, MAX_PATH_LEN);     /* Use the compiled-in default path unless told otherwise */
 
+   /* Safely copy the default control directory path to the buffer holding the path */
+   strlcpy(backlight_path, BACKLIGHT_PATH, MAX_PATH_LEN);
 
    if(argc == 1)
       throw_error(ERR_NO_OPTS, ""); /* Arguments are required */
 
    opterr = 0; /* We'll do our own error handling here */
 
-   /* Parse our command line options */
+   /* Parse our command line options; see the usage summary in usage() */
    while((opt = getopt_long(argc, argv, "d:f:hi:mprvw:", longopts, NULL)) != -1) {
       switch(opt) {
       case 'd':
@@ -166,7 +214,7 @@ void parse_args(int argc, char* argv[]) {
          cmdline_brightness = optarg;
          break;
       case 'f':
-         strlcpy(backlight_path, optarg, MAX_PATH_LEN);
+         strlcpy(backlight_path, optarg, MAX_PATH_LEN); /* Use a different control directory */
          break;
       case 'h':
          show_help = 1;
@@ -204,6 +252,7 @@ void parse_args(int argc, char* argv[]) {
          cmdline_brightness = optarg;
          break;
       case '?':
+	 /* Check if options that require an argument have one */
          if(optopt == 'd' || optopt == 'i' || optopt == 'f' || optopt == 'w')
             throw_error(ERR_OPT_INCOMPLETE, (char *) optopt);
          else
@@ -214,8 +263,10 @@ void parse_args(int argc, char* argv[]) {
    }
 
    if(optind != argc)
+      /* We have too many arguments */
       throw_error(ERR_ARG_OVERLOAD, "");
 
+   /* Show a help and usage message if neccesary */
    if(show_help || show_version) { /* If either -v or -h are specified */
       if(show_version)
          version();
@@ -229,9 +280,11 @@ void parse_args(int argc, char* argv[]) {
    }
 
    if(set_backlight)
+      /* Check that the argument we recieved is okay */
       brightness = parse_cmdline_int(cmdline_brightness);
-
+   
    if(inc_brightness || dec_brightness)
+      /* Same as immediately above */
       delta_brightness = parse_cmdline_int(cmdline_brightness);
 
    return;
@@ -239,25 +292,37 @@ void parse_args(int argc, char* argv[]) {
 
 
 unsigned int parse_cmdline_int(char* arg_to_parse) {
+
+   /* Check that any 'integers' we have received on the command line
+      are actually parseable ints */
+
    int character = 0;
 
+   /* Check that all the characters of the argument are digits */
    while(arg_to_parse[character] != '\0') {
 
+      /* Don't allow arguments longer than five characters */
       if(character >= 5 || isdigit(arg_to_parse[character]) == 0)
          throw_error(ERR_INVAL_OPT, "");
       character++;
 
    }
 
+   /* Return the passed argument as an unsigned integer */
    return (unsigned int) atoi(arg_to_parse);
 }
 
 void read_backlight_brightness() {
-   unsigned int outval;
-   char* out_string_end;
 
+   /* Read and print the backlight brightness */
+   
+   unsigned int outval;
+   char* out_string_end; /* Placeholder string to format the program output nicely */
+
+   /* Actually read the value from the file */
    brightness = get_value_from_file("/brightness");
 
+   /* Account for any values as percentages and set the placeholder string */
    if(values_as_percentages) {
       outval = (brightness * 100) / maximum;
       out_string_end = "%.";
@@ -266,6 +331,7 @@ void read_backlight_brightness() {
       out_string_end = ".";
    }
 
+   /* Display an informational message on stdout */
    printf("Current backlight brightness is: %d%s\n", outval, out_string_end);
 
    return;
@@ -273,6 +339,9 @@ void read_backlight_brightness() {
 
 void throw_error(enum errors err, char* opt_arg) {
 
+   /* Display failure messages upon encountering errors */
+   /* See brightlight.h */
+   
    switch(err) {
    case ERR_OPEN_FILE:
       fprintf(stderr, "Error occured while trying to open %s file.\n", opt_arg);
@@ -318,10 +387,14 @@ void throw_error(enum errors err, char* opt_arg) {
       break;
    }
 
+   /* Exit indicating failure */
    exit(1);
 }
 
 void usage() {
+
+   /* Display usage instructions on stdout */
+   
    printf("Usage: %s [OPTIONS]\n", argv0);
    printf("\
 Options:\n\
@@ -335,9 +408,11 @@ Options:\n\
   -w, --write <val>      Set the backlight brightness level to <val>, where \n\
                          <val> is a positive integer.\n\
   -i, --increment <val>  Increment/increase the backlight brightness level by\n\
-      --increase <val>   <val>, where <val> is a positive integer.\n\
+                         <val>, where <val> is a positive integer.\n\
+      --increase <val>   Same as --increment.\n\
   -d, --decrement <val>  Decrement/decrease the backlight brightness level by\n\
-      --decrease <val>   <val>, where <val> is a positive integer.\n\
+                         <val>, where <val> is a positive integer.\n\
+      --decrease <val>   Same as --decrement.\n\
   -f, --file <path>      Specify alternative path to backlight control \n\
                          directory. This is likely to be a subdirectory under\n\
                          \"/sys/class/backlight/\". Must be an absolute path \n\
@@ -355,7 +430,9 @@ however one of them is required.\n");
 }
 
 void validate_args() {
-/* Don't check if brightness is an int, already done by parse_cmdline_int() */
+
+   /* Check that the brightness specified on the command line is an allowable value. 
+      Don't check if the brightness is an int, already done by parse_cmdline_int(). */
 
    if(values_as_percentages) {
       if(brightness < 0 || brightness > 100) 
@@ -369,12 +446,17 @@ void validate_args() {
 }
 
 void validate_control_directory() {
-   DIR* control_dir;
-   char path[MAX_PATH_LEN + EXTRA_PATH_LEN];
 
+   /* Make sure that the control directory exists and contains the expected files */
+   
+   DIR* control_dir;
+   char path[MAX_PATH_LEN + EXTRA_PATH_LEN]; /* Buffer for holding the path to the directory */
+
+   /* Open the directory */
    control_dir = opendir(backlight_path);
 
    if(control_dir == NULL) {
+      /* Something went wrong in trying to access the directory */
       if(errno == ENOTDIR) 
          throw_error(ERR_FILE_IS_NOT_DIR, backlight_path);
       else if(errno == EACCES) 
@@ -383,14 +465,19 @@ void validate_control_directory() {
          throw_error(ERR_CONTROL_DIR, "");
    }
 
+   /* Clean up and close the directory */
    closedir(control_dir);
 
+   /* Safely copy the path to the backlight control directory into the buffer
+      and append the subpath of the file we are going to read */
    strlcpy(path, backlight_path, MAX_PATH_LEN);
    strlcat(path, "/brightness", EXTRA_PATH_LEN);
 
    if(access(path, F_OK) != 0)
+      /* The file specified does not exist */
       throw_error(ERR_FILE_ACCES, "brightness");
 
+   /* Same as preceding example */
    strlcpy(path, backlight_path, MAX_PATH_LEN);
    strlcat(path, "/max_brightness", EXTRA_PATH_LEN);
 
@@ -402,6 +489,9 @@ void validate_control_directory() {
 
 void validate_decrement(unsigned int reference_value) {
 
+   /* Check that provided decrement value does not take the brightness below zero,
+      accounting for values as percentages */
+   
    if(values_as_percentages) {
       int current = (reference_value * 100) / maximum;
       if(current - (int) delta_brightness < 0) 
@@ -416,6 +506,9 @@ void validate_decrement(unsigned int reference_value) {
 
 void validate_increment(unsigned int reference_value) {
 
+   /* Check that provided increment value does not take the brightness above the
+      maximum permissable value, accounting for values as percentages */
+   
    if(values_as_percentages) {
       unsigned int current = (reference_value * 100) / maximum;
       if(current + delta_brightness > 100) 
@@ -429,6 +522,9 @@ void validate_increment(unsigned int reference_value) {
 }
 
 void version() {
+
+   /* Display program version information on stdout */
+   
    printf("%s v%s\n", PROGRAM_NAME, PROGRAM_VERSION);
    puts("Copyright (C) 2016 David Miller <multiplexd@gmx.com>");
    printf("\
@@ -439,14 +535,20 @@ further information.\n");
 }
 
 void write_backlight_brightness() {
+
+   /* Write the backlight brightness to the control file */
+   
    unsigned int oldval;
    unsigned int val_to_write;
    unsigned int current;
    char* out_string_end;
-   char* out_string_filler;
+   char* out_string_filler; /* Placeholder strings to format the program output nicely */
 
+   /* Get the current value from the control file */
    current = get_value_from_file("/brightness");
 
+   /* Set the values to be written and set the placeholder strings, accounting for
+      values as percentages.*/
    if(values_as_percentages) {
       val_to_write = (brightness * maximum) / 100;
       oldval = (current * 100) / maximum;
@@ -459,27 +561,38 @@ void write_backlight_brightness() {
       out_string_filler = " ";
    }
 
+   /* Actually perform the write to the file. */
    write_brightness_to_file(val_to_write);
 
+   /* Display an informational message on stdout*/
    printf("Changed backlight brightness: %d%s=> %d%s\n", oldval, out_string_filler, brightness, out_string_end);      
 
    return;
 }
 
 void write_brightness_to_file(unsigned int bright) {
-   FILE* brightness_file;
-   char path[MAX_PATH_LEN + EXTRA_PATH_LEN];
 
+   /* Write a backlight brightness value to the control file */
+
+   FILE* brightness_file;
+   char path[MAX_PATH_LEN + EXTRA_PATH_LEN]; /* Buffer for holding the path to the file that is being written to*/
+
+   /* Safely copy the path to the backlight control directory into the buffer
+      and append the subpath of the file we are going to read */
    strlcpy(path, backlight_path, MAX_PATH_LEN);
    strlcat(path, "/brightness", MAX_PATH_LEN + EXTRA_PATH_LEN);
 
+   /* Try to open the backlight file for writing */
    brightness_file = fopen(path, "w");
-   if(brightness_file == NULL) 
+   if(brightness_file == NULL)
+      /* Something went wrong when opening the file */
       throw_error(ERR_OPEN_FILE, "brightness");
 
-   if(fprintf(brightness_file, "%d", bright) < 0) 
+   if(fprintf(brightness_file, "%d", bright) < 0)
+      /* Something went wrong when writing to the file */
       throw_error(ERR_WRITE_FILE, "");
 
+   /* Tidy up and close the file */
    fclose(brightness_file);
 
    return;
