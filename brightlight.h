@@ -52,8 +52,7 @@ enum errors {
    ERR_ACCES_ON_DIR,       /* Got permission denied accessing the control directory */
    ERR_CONTROL_DIR,        /* Control directory couldn't be accessed */
    ERR_FILE_ACCES,         /* Couldn't access a file inside the control directory */
-   ERR_OPT_NOT_KNOWN,      /* Unkown option specified */
-   ERR_OPT_INCOMPLETE,     /* Option requires an argument */
+   ERR_OPT_GETOPT,         /* Getopt encountered an error when parsing options */
    ERR_ARG_OVERLOAD        /* Too may arguments were given */
 };
 

@@ -201,7 +201,8 @@ void parse_args(int argc, char* argv[]) {
    if(argc == 1)
       throw_error(ERR_NO_OPTS, ""); /* Arguments are required */
 
-   opterr = 0; /* We'll do our own error handling here */
+   /* Let getopt_long detect bad options */
+   /* opterr = 0; */ /* We'll do our own error handling here */
 
    /* Parse our command line options; see the usage summary in usage() */
    while((opt = getopt_long(argc, argv, "d:f:hi:mprvw:", longopts, NULL)) != -1) {
@@ -252,12 +253,9 @@ void parse_args(int argc, char* argv[]) {
          cmdline_brightness = optarg;
          break;
       case '?':
-	 /* Check if options that require an argument have one */
-         if(optopt == 'd' || optopt == 'i' || optopt == 'f' || optopt == 'w')
-            throw_error(ERR_OPT_INCOMPLETE, (char *) optopt);
-         else
-            throw_error(ERR_OPT_NOT_KNOWN, (char *) optopt);
-         break;
+         /* getopt_long will output its own error message at this point, but we also want
+            to provide information about the --help flag */
+         throw_error(ERR_OPT_GETOPT, "");
       }
          
    }
@@ -376,11 +374,8 @@ void throw_error(enum errors err, char* opt_arg) {
    case ERR_FILE_ACCES:
       fprintf(stderr, "Control directory exists but could not find %s control file.\n", opt_arg);
       break;
-   case ERR_OPT_NOT_KNOWN:
-      fprintf(stderr, "Unknown option. Pass the --help flag for help.\n", opt_arg);
-      break;
-   case ERR_OPT_INCOMPLETE:
-      fprintf(stderr, "Option requires an argument. Pass the --help flag for help.\n", opt_arg);
+   case ERR_OPT_GETOPT:
+      fprintf(stderr, "Pass the --help flag for help.\n");
       break;
    case ERR_ARG_OVERLOAD:
       fputs("Too many arguments. Pass the --help flag for help.\n", stderr);
