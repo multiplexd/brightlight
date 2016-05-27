@@ -1,4 +1,4 @@
-/* brightlight v3-rc1 - change the screen backlight brightness on Linux systems
+/* brightlight v3-rc2 - change the screen backlight brightness on Linux systems
 ** Copyright (C) 2016 multiplex'd <multiplexd@gmx.com>
 **
 ** This program is free software; you can redistribute it and/or
