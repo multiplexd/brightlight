@@ -1,4 +1,4 @@
-/* This file is part of brightlight v3-rc1
+/* This file is part of brightlight v3-rc2
 ** Copyright (C) 2016 multiplex'd <multiplexd@gmx.com>
 **
 ** This program is free software; you can redistribute it and/or
@@ -21,15 +21,12 @@
 #define EXTRA_PATH_LEN 20
 #define CHAR_ARG_LEN 10
 #define PROGRAM_NAME "brightlight"
-#define PROGRAM_VERSION "3-rc1"
+#define PROGRAM_VERSION "3-rc2"
 
 /* Global variables */
 
-unsigned int get_backlight;
-unsigned int set_backlight;
-unsigned int max_brightness;
-unsigned int inc_brightness;
-unsigned int dec_brightness;
+unsigned int backlight_operation = 0;
+
 int brightness;               /* Signed because of file I/O testing done in read_maximum_brightness() which requires signed ints */
 unsigned int maximum;
 unsigned int values_as_percentages;
@@ -37,6 +34,14 @@ unsigned int delta_brightness;
 unsigned int current_brightness;
 char *argv0;
 char backlight_path[MAX_PATH_LEN];
+
+/* Flags for backlight_operation */
+
+#define BL_GET_BRIGHTNESS 1
+#define BL_SET_BRIGHTNESS 2
+#define BL_MAX_BRIGHTNESS 3
+#define BL_INC_BRIGHTNESS 4
+#define BL_DEC_BRIGHTNESS 5
 
 /* List of errors */
 

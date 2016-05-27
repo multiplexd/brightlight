@@ -1,4 +1,4 @@
-/* brightlight v3-rc1 - change the screen backlight brightness on Linux systems
+/* brightlight v3-rc2 - change the screen backlight brightness on Linux systems
 ** Copyright (C) 2016 multiplex'd <multiplexd@gmx.com>
 **
 ** This program is free software; you can redistribute it and/or
@@ -49,27 +49,30 @@ int main(int argc, char* argv[]) {
       enough to always read it */
    maximum = get_value_from_file("/max_brightness");
 
-   /* If we're setting the backlight explicitly then check that our command line
-      arguments are sane. Cannot be performed inside parse_args because the 
-      maximum backlight brightness needs to be known. */
-   if(set_backlight) {
-      validate_args();
-   }
 
-   /* Take action based on global flags that are set */
-   if(get_backlight) 
+   /* Take action based on value of backlight_operation */
+   switch(backlight_operation) {
+   case BL_GET_BRIGHTNESS:
       read_backlight_brightness();
-   else if(set_backlight) 
+      break;
+   case BL_SET_BRIGHTNESS:
+      validate_args(); /* Check command line arguments are sane. Needs the maximum brightness. */
       write_backlight_brightness();
-   else if(max_brightness)
-      /* Maximum brightness is known at this point */
-      printf("Maximum backlight brightness is: %d.\n", maximum);
-   else if(inc_brightness || dec_brightness) 
+      break;
+   case BL_MAX_BRIGHTNESS:
+      printf("Maximum backlight brightness is: %d.\n", maximum); /* Maximum brightness 
+								    is known at this point. */
+      break;
+   case BL_INC_BRIGHTNESS:
       change_existing_brightness();
-   else
-      /* Something went wrong */
+      break;
+   case BL_DEC_BRIGHTNESS:
+      change_existing_brightness();
+      break;
+   default:
       throw_error(ERR_PARSE_OPTS, "");
-
+   }
+   
    /* Things must have worked if we get here; exit cleanly */
    exit(0);
 }
@@ -88,17 +91,14 @@ void change_existing_brightness() {
       command line arguments are sane or not */
    current = get_value_from_file("/brightness");
 
-   /* Check the command line arguments */
-   if(inc_brightness) { 
-      validate_increment(current);      
-   } else if(dec_brightness) {
-      validate_decrement(current);
-   }
-
    /* Calculate the value that should be written to the control file, account
       for values as percentages and generate placeholder strings for formatting
       the program output */
-   if(inc_brightness) {
+   if(backlight_operation == BL_INC_BRIGHTNESS) {
+
+      /* Check the command line arguments */
+      validate_increment(current);
+      
       if(values_as_percentages) {
          val_to_write = current + ((delta_brightness * maximum) / 100);
          oldval = (current * 100) / maximum;
@@ -110,7 +110,18 @@ void change_existing_brightness() {
          out_string_end = ".";
          out_string_filler = " ";
       }
-   } else if(dec_brightness){
+
+      /* Actually write the required value to the control file */
+      write_brightness_to_file(val_to_write);
+      
+      /* Display an informational message on stdout */
+      printf("Changed backlight brightness: %d%s=> %d%s\n", oldval, out_string_filler, oldval + delta_brightness, out_string_end);
+      
+   } else if(backlight_operation == BL_DEC_BRIGHTNESS){
+
+      /* Check the command line arguments */
+      validate_decrement(current);
+      
       if(values_as_percentages) {
          val_to_write = current - ((delta_brightness * maximum) / 100);
          oldval = (current * 100) / maximum;
@@ -122,18 +133,15 @@ void change_existing_brightness() {
          out_string_end = ".";
          out_string_filler = " ";
       }
-   }
 
-   /* Actually write the required value to the control file */
-   write_brightness_to_file(val_to_write);
+      /* Actually write the required value to the control file */
+      write_brightness_to_file(val_to_write);
 
-   /* Display an informational message on stdout */
-   if(inc_brightness) {
-      printf("Changed backlight brightness: %d%s=> %d%s\n", oldval, out_string_filler, oldval + delta_brightness, out_string_end);      
-   } else if(dec_brightness) {
+      /* Display an informational message on stdout */
       printf("Changed backlight brightness: %d%s=> %d%s\n", oldval, out_string_filler, oldval - delta_brightness, out_string_end);
+      
    }
-   
+
    return;
 }
 
@@ -179,10 +187,6 @@ void parse_args(int argc, char* argv[]) {
    char* cmdline_brightness;
   
    /* Initialise variables */
-   set_backlight = 0;
-   get_backlight = 0;
-   max_brightness = 0;
-   values_as_percentages = 0;
    brightness = 0;
    conflicting_args = 0;
    show_version = 0;
@@ -203,7 +207,7 @@ void parse_args(int argc, char* argv[]) {
       case 'd':
          if(conflicting_args)
             throw_error(ERR_OPT_CONFLICT, "");
-         dec_brightness = 1;
+         backlight_operation = BL_DEC_BRIGHTNESS;
          conflicting_args = 1;
          cmdline_brightness = optarg;
          break;
@@ -216,14 +220,14 @@ void parse_args(int argc, char* argv[]) {
       case 'i':
          if(conflicting_args)
             throw_error(ERR_OPT_CONFLICT, "");
-         inc_brightness = 1;
+         backlight_operation = BL_INC_BRIGHTNESS;
          conflicting_args = 1;
          cmdline_brightness = optarg;
          break;
       case 'm':
          if(conflicting_args)
             throw_error(ERR_OPT_CONFLICT, "");
-         max_brightness = 1;
+         backlight_operation = BL_MAX_BRIGHTNESS;
          conflicting_args = 1;
          break;
       case 'p':
@@ -232,7 +236,7 @@ void parse_args(int argc, char* argv[]) {
       case 'r':
          if(conflicting_args)
             throw_error(ERR_OPT_CONFLICT, "");
-         get_backlight = 1;
+         backlight_operation = BL_GET_BRIGHTNESS;
          conflicting_args = 1;
          break;
       case 'v':
@@ -241,7 +245,7 @@ void parse_args(int argc, char* argv[]) {
       case 'w':
          if(conflicting_args)
             throw_error(ERR_OPT_CONFLICT, "");
-         set_backlight = 1;
+         backlight_operation = BL_SET_BRIGHTNESS;
          conflicting_args = 1;
          cmdline_brightness = optarg;
          break;
@@ -270,11 +274,12 @@ void parse_args(int argc, char* argv[]) {
       exit(0);
    }
 
-   if(set_backlight)
+   if(backlight_operation == BL_SET_BRIGHTNESS)
       /* Check that the argument we recieved is okay */
       brightness = parse_cmdline_int(cmdline_brightness);
    
-   if(inc_brightness || dec_brightness)
+   if(backlight_operation == BL_INC_BRIGHTNESS ||
+      backlight_operation == BL_DEC_BRIGHTNESS)
       /* Same as immediately above */
       delta_brightness = parse_cmdline_int(cmdline_brightness);
 
