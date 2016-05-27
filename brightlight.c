@@ -19,13 +19,6 @@
 /*
 ** This program requires libbsd <libbsd.freedesktop.org> or a BSD-compatible 
 ** implementation of strlcpy() and strlcat().
-**
-** To compile:
-**
-**   $ gcc -o brightlight brightlight.c -lbsd
-**
-** (assuming you use gcc of course; clang works as well). This program can 
-** also be statically linked by adding the -static flag.
 */
 
 #include <bsd/string.h>
