@@ -76,7 +76,7 @@ v2, 26/04/2016 - Tidied up program internals, added new operations
 License
 =======
 
-Copyright (C) 2016 David Miller <multiplexd@gmx.com>
+Copyright (C) 2016 multiplex'd <multiplexd@gmx.com>
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
