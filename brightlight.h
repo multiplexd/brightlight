@@ -1,5 +1,5 @@
-/* This file is part of brightlight v2
-** Copyright (C) 2016 David Miller <multiplexd@gmx.com>
+/* This file is part of brightlight v3-rc1
+** Copyright (C) 2016 multiplex'd <multiplexd@gmx.com>
 **
 ** This program is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU General Public License
@@ -9,30 +9,21 @@
 ** This program is distributed in the hope that it will be useful,
 ** but WITHOUT ANY WARRANTY; without even the implied warranty of
 ** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-** GNU General Public License for more details.
+** file LICENSE for more details.
 **
 ** You should have received a copy of the GNU General Public License
 ** along with this program; if not, write to the Free Software
 ** Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
-#include <bsd/string.h>
-#include <ctype.h>
-#include <dirent.h>
-#include <errno.h>
-#include <getopt.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <unistd.h>
-
 #define BACKLIGHT_PATH "/sys/class/backlight/intel_backlight"
 #define MAX_PATH_LEN 200
 #define EXTRA_PATH_LEN 20
 #define CHAR_ARG_LEN 10
 #define PROGRAM_NAME "brightlight"
-#define PROGRAM_VERSION "2"
+#define PROGRAM_VERSION "3-rc1"
+
+/* Global variables */
 
 unsigned int get_backlight;
 unsigned int set_backlight;
@@ -47,6 +38,8 @@ unsigned int current_brightness;
 char *argv0;
 char backlight_path[MAX_PATH_LEN];
 
+/* List of errors */
+
 enum errors {
    ERR_OPEN_FILE,          /* Error trying to open a file */
    ERR_READ_FILE,          /* Error reading from a file */
@@ -59,10 +52,11 @@ enum errors {
    ERR_ACCES_ON_DIR,       /* Got permission denied accessing the control directory */
    ERR_CONTROL_DIR,        /* Control directory couldn't be accessed */
    ERR_FILE_ACCES,         /* Couldn't access a file inside the control directory */
-   ERR_OPT_NOT_KNOWN,      /* Unkown option specified */
-   ERR_OPT_INCOMPLETE,     /* Option requires an argument */
+   ERR_OPT_GETOPT,         /* Getopt encountered an error when parsing options */
    ERR_ARG_OVERLOAD        /* Too may arguments were given */
 };
+
+/* Getopt_long options structure */
 
 static const struct option longopts[] = {
    {"decrement", required_argument, NULL, 'd'},
@@ -78,6 +72,8 @@ static const struct option longopts[] = {
    {"write", required_argument, NULL, 'w'},
    {0, 0, 0, 0},
 };
+
+/* Function prototypes */
 
 void change_existing_brightness();
 unsigned int get_value_from_file(char* path_suffix);

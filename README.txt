@@ -1,29 +1,28 @@
-########################
-    brightlight v2
-########################
+##########################
+    brightlight v3-rc1
+##########################
+
+WARNING: This software version is a RELEASE CANDIDATE - it may not be stable.
 
 Overview
 ========
 
-This is brightlight, version 2. brightlight is a program that can get and
+This is brightlight, version v3-rc1. brightlight is a program that can get and
 set the screen backlight brightness on Linux systems using the kernel sysfs 
 interface. I wrote this program because the backlight keys on my laptop's 
 keyboard didn't work after I installed Linux on it, and the bash script I was 
 using to perform the task wasn't very flexible nor portable.
 
 This program requires libbsd or a BSD-compatible implementation of strlcpy() 
-and strlcat() (see the comment at the top of the source code).
+and strlcat().
 
 
 Installation
 ============
 
-brightlight can be compiled with:
-
-  $ gcc -o brightlight brightlight.c -lbsd
-
-(assuming you use gcc of course; clang works as well). Then, place the 
-resulting binary somewhere in your $PATH.
+brightlight can be compiled by issuing 'make'. Compiler options can be changed
+by editing the Makefile. The default compiler is gcc, however clang works too.
+You can then place the resulting binary somewhere in your $PATH.
 
 You can change the path #defined by the preprocessor macro BACKLIGHT_PATH to 
 suit your own system. It must point to the directory where the files 
@@ -74,7 +73,7 @@ v2, 26/04/2016 - Tidied up program internals, added new operations
 License
 =======
 
-Copyright (C) 2016 David Miller <multiplexd@gmx.com>
+Copyright (C) 2016 multiplex'd <multiplexd@gmx.com>
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
