@@ -1,4 +1,4 @@
-/* brightlight v3-rc2 - change the screen backlight brightness on Linux systems
+/* brightlight v3-rc3 - change the screen backlight brightness on Linux systems
 ** Copyright (C) 2016 multiplex'd <multiplexd@gmx.com>
 **
 ** This program is free software; you can redistribute it and/or
@@ -42,6 +42,10 @@ int main(int argc, char* argv[]) {
    /* Parse the command line arguments */
    parse_args(argc, argv);
 
+   if(backlight_operation == 0)
+      /* No operation was specified, backlight_operation is unchanged */
+            throw_error(ERR_PARSE_OPTS, "");
+
    /* Make sure the sysfs control directory is accessible */
    validate_control_directory();
 
@@ -69,8 +73,6 @@ int main(int argc, char* argv[]) {
    case BL_DEC_BRIGHTNESS:
       change_existing_brightness();
       break;
-   default:
-      throw_error(ERR_PARSE_OPTS, "");
    }
    
    /* Things must have worked if we get here; exit cleanly */
@@ -408,8 +410,7 @@ Options:\n\
       --decrease <val>   Same as --decrement.\n\
   -f, --file <path>      Specify alternative path to backlight control \n\
                          directory. This is likely to be a subdirectory under\n\
-                         \"/sys/class/backlight/\". Must be an absolute path \n\
-                         with a trailing slash.\n\
+                         \"/sys/class/backlight/\".\n\
   -m, --maximum          Show maximum brightness level of the screen \n\
                          backlight on the kernel's scale. The compile-time \n\
                          default control directory is used if -f or --file is\n\
@@ -464,7 +465,7 @@ void validate_control_directory() {
    /* Safely copy the path to the backlight control directory into the buffer
       and append the subpath of the file we are going to read */
    strlcpy(path, backlight_path, MAX_PATH_LEN);
-   strlcat(path, "/brightness", EXTRA_PATH_LEN);
+   strlcat(path, "/brightness", MAX_PATH_LEN + EXTRA_PATH_LEN);
 
    if(access(path, F_OK) != 0)
       /* The file specified does not exist */
@@ -472,7 +473,7 @@ void validate_control_directory() {
 
    /* Same as preceding example */
    strlcpy(path, backlight_path, MAX_PATH_LEN);
-   strlcat(path, "/max_brightness", EXTRA_PATH_LEN);
+   strlcat(path, "/max_brightness", MAX_PATH_LEN + EXTRA_PATH_LEN);
 
    if(access(path, F_OK) != 0) 
       throw_error(ERR_FILE_ACCES, "max_brightness");
@@ -519,7 +520,7 @@ void version() {
    /* Display program version information on stdout */
    
    printf("%s v%s\n", PROGRAM_NAME, PROGRAM_VERSION);
-   puts("Copyright (C) 2016 David Miller <multiplexd@gmx.com>");
+   puts("Copyright (C) 2016 multiplex'd <multiplexd@gmx.com>");
    printf("\
 This is free software under the terms of the GNU General Public License, \n\
 version 2 or later. You are free to use, modify and redistribute it, however \n\
