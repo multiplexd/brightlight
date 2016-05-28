@@ -42,18 +42,19 @@ Options:
                          (0 to 100) instead of the internal scale the kernel 
                          uses (such as e.g. 0 to 7812).
   -r, --read             Read the backlight brightness level.
-  -w, --write <val>      Set the backlight brightness level to <val>, where 
+  -w, --write <val>      Set the backlight brightness level to <val>, where
                          <val> is a positive integer.
   -i, --increment <val>  Increment/increase the backlight brightness level by
-      --increase <val>   <val>, where <val> is a positive integer.
+                         <val>, where <val> is a positive integer. 
+      --increase <val>   Same as --increment.
   -d, --decrement <val>  Decrement/decrease the backlight brightness level by
-      --decrease <val>   <val>, where <val> is a positive integer.
-  -f, --file <path>      Specify alternative path to backlight control 
+                         <val>, where <val> is a positive integer.
+      --decrease <val>   Same as --decrement.
+  -f, --file <path>      Specify alternative path to backlight control
                          directory. This is likely to be a subdirectory under
-                         "/sys/class/backlight/". Must be an absolute path 
-                         with a trailing slash.
-  -m, --maximum          Show maximum brightness level of the screen 
-                         backlight on the kernel's scale. The compile-time 
+                         \"/sys/class/backlight/\".
+  -m, --maximum          Show maximum brightness level of the screen
+                         backlight on the kernel's scale. The compile-time
                          default control directory is used if -f or --file is
                          not specified. The -p and --percentage flags are 
                          ignored when this option is specified.
