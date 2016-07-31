@@ -1,13 +1,11 @@
-##########################
-    brightlight v3-rc3
-##########################
-
-WARNING: This software version is a RELEASE CANDIDATE - it may not be stable.
+######################
+    brightlight v3
+######################
 
 Overview
 ========
 
-This is brightlight, version v3-rc3. brightlight is a program that can get and
+This is brightlight, version v3. brightlight is a program that can get and
 set the screen backlight brightness on Linux systems using the kernel sysfs 
 interface. I wrote this program because the backlight keys on my laptop's 
 keyboard didn't work after I installed Linux on it, and the bash script I was 
@@ -69,6 +67,7 @@ Changelog:
 v1, 07/02/2016 - First version of brighlight.
 v2, 26/04/2016 - Tidied up program internals, added new operations
                  and long options.
+v3, 31/07/2016 - Tidied up program logic and internals, added build system.
 
 
 License
