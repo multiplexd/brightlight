@@ -1,5 +1,5 @@
 ######################
-    brightlight v3
+    brightlight v4
 ######################
 
 Overview
@@ -68,7 +68,7 @@ v1, 07/02/2016 - First version of brighlight.
 v2, 26/04/2016 - Tidied up program internals, added new operations
                  and long options.
 v3, 31/07/2016 - Tidied up program logic and internals, added build system.
-
+v4, 08/01/2017 - Minor changes to fix bugs found by clang static analyzer.
 
 License
 =======
