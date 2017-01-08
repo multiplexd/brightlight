@@ -186,7 +186,7 @@ void parse_args(int argc, char* argv[]) {
    
    char opt; /* Used with getopt() below */
    int conflicting_args, show_version, show_help;
-   char* cmdline_brightness;
+   char* cmdline_brightness = "";
   
    /* Initialise variables */
    brightness = 0;
@@ -457,11 +457,11 @@ void validate_control_directory() {
          throw_error(ERR_ACCES_ON_DIR, backlight_path);
       else 
          throw_error(ERR_CONTROL_DIR, "");
+   } else {
+      /* Clean up and close the directory */
+      closedir(control_dir);
    }
-
-   /* Clean up and close the directory */
-   closedir(control_dir);
-
+   
    /* Safely copy the path to the backlight control directory into the buffer
       and append the subpath of the file we are going to read */
    strlcpy(path, backlight_path, MAX_PATH_LEN);
