@@ -73,7 +73,7 @@ v4, 08/01/2017 - Minor changes to fix bugs found by clang static analyzer.
 License
 =======
 
-Copyright (C) 2016 multiplex'd <multiplexd@gmx.com>
+Copyright (C) 2016, 2017 multiplex'd <multiplexd@gmx.com>
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
