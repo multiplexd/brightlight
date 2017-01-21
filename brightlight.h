@@ -1,5 +1,5 @@
 /* This file is part of brightlight v4
-** Copyright (C) 2016 multiplex'd <multiplexd@gmx.com>
+** Copyright (C) 2016, 2017 multiplex'd <multiplexd@gmx.com>
 **
 ** This program is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU General Public License

@@ -1,5 +1,5 @@
 /* brightlight v4 - change the screen backlight brightness on Linux systems
-** Copyright (C) 2016 multiplex'd <multiplexd@gmx.com>
+** Copyright (C) 2016, 2017 multiplex'd <multiplexd@gmx.com>
 **
 ** This program is free software; you can redistribute it and/or
 ** modify it under the terms of the GNU General Public License
@@ -520,7 +520,7 @@ void version() {
    /* Display program version information on stdout */
    
    printf("%s v%s\n", PROGRAM_NAME, PROGRAM_VERSION);
-   puts("Copyright (C) 2016 multiplex'd <multiplexd@gmx.com>");
+   puts("Copyright (C) 2016, 2017 multiplex'd <multiplexd@gmx.com>");
    printf("\
 This is free software under the terms of the GNU General Public License, \n\
 version 2 or later. You are free to use, modify and redistribute it, however \n\
