@@ -21,7 +21,7 @@
 #define EXTRA_PATH_LEN 20
 #define CHAR_ARG_LEN 10
 #define PROGRAM_NAME "brightlight"
-#define PROGRAM_VERSION "4"
+#define PROGRAM_VERSION "5"
 
 /* Global variables */
 

@@ -69,6 +69,7 @@ v2, 26/04/2016 - Tidied up program internals, added new operations
                  and long options.
 v3, 31/07/2016 - Tidied up program logic and internals, added build system.
 v4, 08/01/2017 - Minor changes to fix bugs found by clang static analyzer.
+v5, 21/10/2017 - Tweak to the Makefile, contributed by Igor Gnaten.
 
 License
 =======
