@@ -5,7 +5,7 @@
 Overview
 ========
 
-This is brightlight, version v4. brightlight is a program that can get and
+This is brightlight, version v5. brightlight is a program that can get and
 set the screen backlight brightness on Linux systems using the kernel sysfs 
 interface. I wrote this program because the backlight keys on my laptop's 
 keyboard didn't work after I installed Linux on it, and the bash script I was 
