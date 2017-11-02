@@ -18,6 +18,16 @@ and strlcat().
 Installation
 ============
 
+Fedora
+------
+
+A package is available in Fedora 25 or later.
+
+  sudo dnf install brightlight
+
+Source
+------
+
 brightlight can be compiled by issuing 'make'. Compiler options can be changed
 by editing the Makefile. The default compiler is gcc, however clang works too.
 You can then place the resulting binary somewhere in your $PATH.
