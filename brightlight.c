@@ -342,7 +342,7 @@ void throw_error(enum errors err, char* opt_arg) {
    
    switch(err) {
    case ERR_OPEN_FILE:
-      fprintf(stderr, "Error occured while trying to open %s file.\n", opt_arg);
+      fprintf(stderr, "Error occurred while trying to open %s file.\n", opt_arg);
       break;
    case ERR_READ_FILE:
       fprintf(stderr, "Could not read from %s file.\n", opt_arg);
