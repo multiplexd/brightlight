@@ -1,19 +1,21 @@
 ######################
-    brightlight v5
+    brightlight v6
 ######################
 
 Overview
 ========
 
-This is brightlight, version v5. brightlight is a program that can get and
+This is brightlight, version v6. brightlight is a program that can get and
 set the screen backlight brightness on Linux systems using the kernel sysfs 
 interface. I wrote this program because the backlight keys on my laptop's 
 keyboard didn't work after I installed Linux on it, and the bash script I was 
 using to perform the task wasn't very flexible nor portable.
 
-This program requires libbsd or a BSD-compatible implementation of strlcpy() 
-and strlcat().
+This program requires libbsd or a BSD-compatible implementation of strtonum().
 
+Please note that versions less than or equal to 5 are licenced under the GPL,
+version 2 or later, while versions 6 and later are licenced under an ISC-like
+licence.
 
 Installation
 ============
@@ -30,9 +32,11 @@ Source
 
 brightlight can be compiled by issuing 'make'. Compiler options can be changed
 by editing the Makefile. The default compiler is gcc, however clang works too.
-You can then place the resulting binary somewhere in your $PATH.
+You can then place the resulting binary somewhere in your $PATH. The default
+linker flags link libbsd for the strtonum() function, however it is possible to
+obtain the strtonum() source seperately and link it into the final executable.
 
-You can change the path #defined by the preprocessor macro BACKLIGHT_PATH to 
+You can change the path #defined by the preprocessor macro DEFAULT_CTRL_DIR to 
 suit your own system. It must point to the directory where the files 
 'brightness' and 'max_brightness' reside. On my laptop, for example, this path 
 is "/sys/class/backlight/intel_backlight/", however yours may be different. 
@@ -89,23 +93,24 @@ v2, 26/04/2016 - Tidied up program internals, added new operations
 v3, 31/07/2016 - Tidied up program logic and internals, added build system.
 v4, 08/01/2017 - Minor changes to fix bugs found by clang static analyzer.
 v5, 21/10/2017 - Tweak to the Makefile, contributed by Igor Gnatenko.
+v6, 25/07/2018 - From-scratch rewrite, relicence under an ISC licence.
 
 License
 =======
 
-Copyright (C) 2016, 2017 multiplex'd <multiplexd@gmx.com>
+Copyright (C) 2016, 2017, 2018 multiplexd <multiplexd@gmx.com>
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+Please note that from version 6 onwards brightlight has been relicenced under an
+ISC-like licence. Prior versions are under the GPL, version 2 or later.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-file LICENSE for more details.
+Permission to use, copy, modify, and distribute this software for any purpose
+with or without fee is hereby granted, provided that the above copyright notice
+and this permission notice appear in all copies.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-02110-1301, USA.
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+THIS SOFTWARE.
