@@ -36,7 +36,7 @@
 #include <unistd.h>
 
 #define PROGNAM "brightlight"
-#define PROGVER 6
+#define PROGVER 7
 
 #define DEFAULT_CTRL_DIR  "/sys/class/backlight/intel_backlight"
 #define MAXBRIGHT         "max_brightness"
@@ -228,8 +228,7 @@ int main(int argc, char *argv[]) {
             numarg = optarg;
             break;
         case '?':
-            /* getopt_long has printed an error message */
-            exit(1);
+            errx(1, "invalid option: '%c'", optopt);
             break;
         default:
             errx(1, "error parsing options");

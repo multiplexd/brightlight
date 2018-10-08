@@ -1,11 +1,11 @@
 ######################
-    brightlight v6
+    brightlight v7
 ######################
 
 Overview
 ========
 
-This is brightlight, version v6. brightlight is a program that can get and
+This is brightlight, version v7. brightlight is a program that can get and
 set the screen backlight brightness on Linux systems using the kernel sysfs 
 interface. I wrote this program because the backlight keys on my laptop's 
 keyboard didn't work after I installed Linux on it, and the bash script I was 
@@ -94,6 +94,7 @@ v3, 31/07/2016 - Tidied up program logic and internals, added build system.
 v4, 08/01/2017 - Minor changes to fix bugs found by clang static analyzer.
 v5, 21/10/2017 - Tweak to the Makefile, contributed by Igor Gnatenko.
 v6, 25/07/2018 - From-scratch rewrite, relicence under an ISC licence.
+v7, 08/10/2018 - Bugfix release.
 
 License
 =======
