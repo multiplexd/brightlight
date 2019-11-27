@@ -48,6 +48,8 @@
 #define OP_DECR 0x08
 #define OP_MAX  0x10
 
+#define rounded_div(a, b) ((a + b / 2) / b)
+
 extern long long strtonum(const char *, long long, long long, const char **);
 
 void usage(void) {
@@ -269,7 +271,7 @@ int main(int argc, char *argv[]) {
 
     current = read_file(dirfd, CURBRIGHT);
 
-#define current_pct() ((current * 100) / max)
+#define current_pct() (rounded_div(current * 100, max))
 #define maybe_pct()   (pflag ? "%" : "")
     
     if (flags & OP_READ) {
@@ -283,20 +285,20 @@ int main(int argc, char *argv[]) {
         if (pflag ? (current_pct() + delta > 100) : (current + delta > max))
             errx(1, "invalid increment: %" PRIu32 "%s", delta, maybe_pct());
 
-        newb = (pflag ? current + ((delta * max) / 100): current + delta);
+        newb = (pflag ? current + rounded_div(delta * max, 100) : current + delta);
         break;
     case OP_DECR:
         if (pflag ? (current_pct() < delta) : (current < delta))
             errx(1, "invalid decrement: %" PRIu32"%s", delta, maybe_pct());
 
-        newb = (pflag ? current - ((delta * max) / 100): current - delta);
+        newb = (pflag ? current - rounded_div(delta * max, 100) : current - delta);
         break;
     case OP_WRIT:
         /* the underflow case is handled by strtonum above */
         if (pflag ? (delta > 100) : (delta > max))
             errx(1, "invalid argument: %" PRIu32 "%s", delta, maybe_pct());
 
-        newb = (pflag ? ((delta * max) / 100) : delta);
+        newb = (pflag ? rounded_div(delta * max, 100) : delta);
         break;
     }
 
@@ -304,7 +306,7 @@ int main(int argc, char *argv[]) {
 
     printf("changed backlight brightness: %" PRIu32 "%s => %" PRIu32 "%s\n",
            (pflag ? current_pct() : current), maybe_pct(),
-           (pflag ? ((newb * 100) / max): newb), maybe_pct());
+           (pflag ? rounded_div(newb * 100, max) : newb), maybe_pct());
 
 end:
     if (close(dirfd) < 0)
