@@ -76,7 +76,7 @@ void usage(void) {
            "                           not specified. The -p and --percentage flags are\n"
            "                           ignored when this option is specified.\n\n"
            "The flags -r, -w, -m, -i, -d and their corresponding long options are mutually\n"
-           "exclusive, however one of them is required.\n");
+           "exclusive.\n");
 }
 
 void versioninfo(void) {
@@ -241,6 +241,9 @@ int main(int argc, char *argv[]) {
 
     if (argc != 0)
         errx(1, "too many arguments (pass '-h' for help)");
+
+    if (! flags)
+        flags = OP_READ;
 
     checkargs(flags);
 
