@@ -42,15 +42,15 @@ suit your own system. It must point to the directory where the files
 is "/sys/class/backlight/intel_backlight/", however yours may be different. 
 The compile-time default can always be overridden using the -f flag (see below).
 
-This program is intended to be installed setuid root, as the files in sysfs are
-owned by user and group root by default; however it is also possible to change
-the permissions on the sysfs files at boot time to a different user and group
-using the 'anacron' functionality found in some cron implementations, using
-systemd-tmpfiles or even in "/etc/rc.local" (where appropriate functionality is
-available). This would allow for regular users (possibly members of a special
-group) to change the backlight brightness without the requirement of suid
-binaries.
-
+By default, the files in sysfs are owned by user and group root, so the
+brightness may only be set by root (though any user may read it). One way around
+this would be to install brightlight setuid root, however this is not
+recommended, as a regular user could use the -f option to read and write files
+owned by other users. It is, however, possible to change the permissions on these
+files in sysfs, which could be set at boot time using the "anacron" functionality
+in some cron implementations, systemd-tmpfiles or /etc/rc.local to a group which
+would permit a controlled subset of users to change the backlight brightness
+without the requirement for a setuid root executable.
 
 Usage
 =====
