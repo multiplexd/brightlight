@@ -78,7 +78,8 @@ void usage(void) {
            "                           not specified. The -p and --percentage flags are\n"
            "                           ignored when this option is specified.\n\n"
            "The flags -r, -w, -m, -i, -d and their corresponding long options are mutually\n"
-           "exclusive.\n");
+           "exclusive. If none of these flags are explicitly specified then -r is the\n"
+           "default.\n");
 }
 
 void versioninfo(void) {
@@ -89,16 +90,16 @@ void versioninfo(void) {
            "there is NO WARRANTY.\n", PROGNAM, PROGVER);
 }
 
-void checkargs(int flags) {
+void checkargs(uint8_t *flags) {
     uint8_t num = 0;
 
     for (int i = 0; i < 8; i++)
-        num += (flags >> i) % 2;
+        num += (*flags >> i) % 2;
 
     if (num > 1)
         errx(1, "conflicting arguments (pass '-h' for help)");
     else if (num == 0)
-        errx(1, "missing arguments (pass '-h' for help)");
+        *flags = OP_READ;
 
     return;
 }
@@ -244,10 +245,7 @@ int main(int argc, char *argv[]) {
     if (argc != 0)
         errx(1, "too many arguments (pass '-h' for help)");
 
-    if (! flags)
-        flags = OP_READ;
-
-    checkargs(flags);
+    checkargs(&flags);
 
     if (ctrldir == NULL) {
         ctrldir = DEFAULT_CTRL_DIR;
