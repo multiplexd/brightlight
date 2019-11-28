@@ -1,5 +1,5 @@
-/* brightlight v6 - change backlight brightness on Linux systems
- * Copyright (C) 2016, 2017, 2018 multiplexd <multiplexd@gmx.com>
+/* brightlight v8 - change backlight brightness on Linux systems
+ * Copyright (C) 2016, 2017, 2018, 2019 multiplexd <multi@in-addr.xyz>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -36,7 +36,7 @@
 #include <unistd.h>
 
 #define PROGNAM "brightlight"
-#define PROGVER 7
+#define PROGVER 8
 
 #define DEFAULT_CTRL_DIR  "/sys/class/backlight/intel_backlight"
 #define MAXBRIGHT         "max_brightness"
@@ -84,7 +84,7 @@ void usage(void) {
 
 void versioninfo(void) {
     printf("%s, v%u\n"
-           "Copyright (C) 2016, 2017, 2018 multiplexd <multiplexd@gmx.com>\n\n"
+           "Copyright (C) 2016, 2017, 2018, 2019 multiplexd <multi@in-addr.xyz>\n\n"
            "This is free software, licenced under an ISC-like licence. You are\n"
            "free to use, redistribute and modify this software as you wish, but\n"
            "there is NO WARRANTY.\n", PROGNAM, PROGVER);

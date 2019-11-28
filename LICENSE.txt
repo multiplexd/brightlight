@@ -1,4 +1,4 @@
-Copyright (C) 2016, 2017, 2018 multiplexd <multiplexd@gmx.com>
+Copyright (C) 2016, 2017, 2018, 2019 multiplexd <multi@in-addr.xyz>
 
 Please note that from version 6 onwards brightlight has been relicenced under an
 ISC-like licence. Prior versions are under the GPL, version 2 or later.
